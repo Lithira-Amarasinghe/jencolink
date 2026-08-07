@@ -84,7 +84,7 @@ module.exports = async function (context, req) {
   // Normalise (trim) after validation passed.
   const name = body.name.trim();
   const email = body.email.trim();
-  const company = body.company.trim();
+  const company = typeof body.company === 'string' ? body.company.trim() : '';
   const message = body.message.trim();
 
   const client = new EmailClient(ACS_ENDPOINT, credential);
@@ -95,7 +95,7 @@ module.exports = async function (context, req) {
       replyTo: [{ address: email, displayName: name }],
     },
     content: {
-      subject: `New contact from ${name} — ${company}`,
+      subject: company ? `New contact from ${name} — ${company}` : `New contact from ${name}`,
       plainText: buildPlainText({ name, email, company, message }),
       html: buildHtml({ name, email, company, message }),
     },
@@ -120,11 +120,16 @@ module.exports = async function (context, req) {
   }
 };
 
+const OPTIONAL_FIELDS = new Set(['company']);
+
 function validate({ name, email, company, message }) {
   const fields = { name, email, company, message };
 
   for (const [key, value] of Object.entries(fields)) {
-    if (typeof value !== 'string' || value.trim() === '') {
+    if (OPTIONAL_FIELDS.has(key) && (value === undefined || value === null)) {
+      continue;
+    }
+    if (typeof value !== 'string' || (!OPTIONAL_FIELDS.has(key) && value.trim() === '')) {
       return `Missing or invalid field: ${key}.`;
     }
     if (value.length > LIMITS[key]) {
@@ -145,7 +150,7 @@ function buildPlainText({ name, email, company, message }) {
     '',
     `Name:    ${name}`,
     `Email:   ${email}`,
-    `Company: ${company}`,
+    `Company: ${company || '(not provided)'}`,
     '',
     'Message:',
     message,
@@ -172,7 +177,7 @@ function buildHtml({ name, email, company, message }) {
     </tr>
     <tr>
       <td style="padding:8px 12px;background:#f4f4f4;font-weight:600">Company</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e5e5">${esc(company)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e5e5e5">${esc(company || '(not provided)')}</td>
     </tr>
   </table>
   <h3 style="margin-bottom:8px">Message</h3>
