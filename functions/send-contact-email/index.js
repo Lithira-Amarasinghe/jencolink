@@ -8,6 +8,12 @@
 // The `ref` mirrors the Azure invocation id so a failed response can be traced
 // back to the detailed server-side log without exposing internals to the caller.
 
+// Polyfill: the Azure SDK (@azure/core-util) expects global WebCrypto, which
+// this Function App's Node runtime doesn't expose by default.
+if (!globalThis.crypto) {
+  globalThis.crypto = require('node:crypto').webcrypto;
+}
+
 const { EmailClient } = require('@azure/communication-email');
 const { DefaultAzureCredential } = require('@azure/identity');
 
