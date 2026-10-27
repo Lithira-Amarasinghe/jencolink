@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "gencolink": {
+    "jencolink": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -66,10 +66,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "gencolink:build:production"
+              "buildTarget": "jencolink:build:production"
             },
             "development": {
-              "buildTarget": "gencolink:build:development"
+              "buildTarget": "jencolink:build:development"
             }
           },
           "defaultConfiguration": "development"

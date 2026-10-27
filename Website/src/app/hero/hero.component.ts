@@ -50,7 +50,7 @@ interface Wash {
  *    field visibly parts and glows wherever the pointer goes.
  *  • An aurora wash + cursor spotlight sit under the mesh for depth and colour.
  *
- * On top: the GENCOLINK brand-band (CSS letter assembly) and the single vision
+ * On top: the JENCOLINK brand-band (CSS letter assembly) and the single vision
  * statement below it. Everything is visible at rest; motion only enhances.
  * Fully reduced-motion aware.
  */
@@ -68,7 +68,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   @ViewChild('stage') private stageRef?: ElementRef<HTMLElement>;
   @ViewChild('wordmark') private wordmarkRef?: ElementRef<HTMLElement>;
 
-  readonly brandLetters = 'GENCOLINK'.split('');
+  readonly brandLetters = 'JENCOLINK'.split('');
 
   private ctx?: CanvasRenderingContext2D;
   private nodes: Node[] = [];

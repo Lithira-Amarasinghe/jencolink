@@ -1,13 +1,13 @@
 variable "resource_group_name" {
   description = "Existing Azure resource group name"
   type        = string
-  default     = "gencolink"
+  default     = "jencolink"
 }
 
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "gencolink"
+  default     = "jencolink"
 }
 
 variable "environment" {
@@ -68,7 +68,7 @@ variable "tags" {
   description = "Common tags"
   type        = map(string)
   default = {
-    Project     = "Gencolink"
+    Project     = "Jencolink"
     Environment = "Production"
     ManagedBy   = "Terraform"
   }
@@ -98,7 +98,7 @@ variable "contact_recipient_email" {
 variable "from_email_address" {
   description = "From email address for notifications"
   type        = string
-  default     = "noreply@gencolink.com"
+  default     = "noreply@jencolink.com"
 }
 
 variable "github_repo_token" {
@@ -123,7 +123,7 @@ variable "github_owner" {
 variable "github_repository" {
   description = "GitHub repository name (no owner prefix)"
   type        = string
-  default     = "gencolink"
+  default     = "jencolink"
 }
 
 variable "github_branch" {

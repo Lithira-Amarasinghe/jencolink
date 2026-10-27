@@ -320,10 +320,10 @@ const defaultContent: SiteContent = {
     },
   ],
   whySection: {
-    eyebrow: 'Why Choose Gencolink',
+    eyebrow: 'Why Choose Jencolink',
     heading: 'A reliable partner for building modern software',
     description:
-      'At Gencolink, we believe successful software is built on clear communication, thoughtful engineering, and a genuine understanding of your goals. We focus on delivering practical, scalable solutions while building long-term relationships based on trust and collaboration.',
+      'At Jencolink, we believe successful software is built on clear communication, thoughtful engineering, and a genuine understanding of your goals. We focus on delivering practical, scalable solutions while building long-term relationships based on trust and collaboration.',
   },
   faqSection: {
     eyebrow: 'Frequently Asked Questions',
@@ -342,9 +342,9 @@ const defaultContent: SiteContent = {
       "Whether you're starting a new project, exploring an idea, or looking to improve an existing system, we'd love to hear from you. Share your goals with us, and we'll get back to you within one business day.",
   },
   companyDetails: {
-    brandName: 'Gencolink',
+    brandName: 'Jencolink',
     tagline: 'Building software that supports growth, innovation, and lasting value.',
-    email: 'hello@gencolink.com',
+    email: 'hello@jencolink.com',
     phonePrimary: '+94 71 4 280 380',
     phoneSecondary: '+94 77 5 690 380',
     linkedinUrl: 'https://www.linkedin.com',

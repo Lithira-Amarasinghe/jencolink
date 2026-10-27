@@ -1,6 +1,6 @@
 ---
 name: directus-bootstrap
-description: Start the Directus CMS locally and bootstrap its collections/seed data for Gencolink. Use when Directus isn't running yet, when /items/site_content returns empty/missing, or when the user asks to "start Directus" or "set up the CMS".
+description: Start the Directus CMS locally and bootstrap its collections/seed data for Jencolink. Use when Directus isn't running yet, when /items/site_content returns empty/missing, or when the user asks to "start Directus" or "set up the CMS".
 disable-model-invocation: true
 ---
 

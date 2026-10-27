@@ -6,7 +6,7 @@ GitHub Actions needs 3 secrets to authenticate to Azure. These must be created B
 
 ```bash
 az ad sp create-for-rbac \
-  --name "gencolink-github-actions" \
+  --name "jencolink-github-actions" \
   --role Contributor \
   --scopes /subscriptions/YOUR_SUBSCRIPTION_ID
 ```
@@ -15,7 +15,7 @@ az ad sp create-for-rbac \
 ```json
 {
   "appId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-  "displayName": "gencolink-github-actions",
+  "displayName": "jencolink-github-actions",
   "password": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
   "tenant": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }

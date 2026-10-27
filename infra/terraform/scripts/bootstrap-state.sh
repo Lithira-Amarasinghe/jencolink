@@ -48,8 +48,8 @@ export MSYS_NO_PATHCONV=1
 
 # ─── Configuration ──────────────────────────────────────────────────────────
 
-RESOURCE_GROUP="${RESOURCE_GROUP:-gencolink-rg-tfstate}"
-STORAGE_ACCOUNT="${STORAGE_ACCOUNT:-gencolinktfstate}"
+RESOURCE_GROUP="${RESOURCE_GROUP:-jencolink-rg-tfstate}"
+STORAGE_ACCOUNT="${STORAGE_ACCOUNT:-jencolinktfstate}"
 CONTAINER_NAME="${CONTAINER_NAME:-tfstate}"
 LOCATION="${LOCATION:-eastus2}"
 RETENTION_DAYS="${RETENTION_DAYS:-7}"
@@ -87,8 +87,8 @@ Creates (or verifies) the Azure Storage backend used for Terraform remote
 state. Idempotent and safe to re-run.
 
 Environment overrides:
-  RESOURCE_GROUP    (default: gencolink-rg-tfstate)
-  STORAGE_ACCOUNT   (default: gencolinktfstate)
+  RESOURCE_GROUP    (default: jencolink-rg-tfstate)
+  STORAGE_ACCOUNT   (default: jencolinktfstate)
   CONTAINER_NAME    (default: tfstate)
   LOCATION          (default: eastus2)
   RETENTION_DAYS    (default: 7)

@@ -1,6 +1,6 @@
 # Deployment Guide
 
-The single source of truth for deploying Gencolink. (Older `*_GUIDE.md`,
+The single source of truth for deploying Jencolink. (Older `*_GUIDE.md`,
 `*_DELIVERY.md`, `ULTRA_LOW_COST_*`, and `FREE_TIER_*` docs described an
 abandoned Container Apps / PostgreSQL / free-tier design and were removed — see
 git history if you need them.)
@@ -16,7 +16,7 @@ git history if you need them.)
 | **Storage** | Azure Storage Account | Directus uploads (blob) |
 | **Secrets** | Azure Key Vault | Terraform-generated; nothing hand-typed |
 | **Email delivery** | Azure Communication Services | Managed outside Terraform |
-| **Terraform state** | Azure Storage (`gencolink-rg-tfstate`/`gencolinktfstate`) | Remote, encrypted at rest; AAD auth, no access key |
+| **Terraform state** | Azure Storage (`jencolink-rg-tfstate`/`jencolinktfstate`) | Remote, encrypted at rest; AAD auth, no access key |
 
 Flow: contact form → Directus `contact_submissions` → Directus Flow webhook →
 Function → ACS email.
@@ -41,32 +41,32 @@ sources, no multi-phase bootstrap flags.
 - **B1+**: the Function App shares Directus's App Service Plan, in the main RG.
 - **F1/D1**: Azure forbids Function Apps on Free/Shared plans, so the Function
   App runs on its own **Consumption (Y1) plan in a dedicated resource group**
-  (`gencolink-prod-functions-rg`). This is Azure's documented requirement — a
+  (`jencolink-prod-functions-rg`). This is Azure's documented requirement — a
   resource group that hosts a Free/Shared Linux web-app plan cannot also host a
   Linux Consumption plan. Consumption is $0 fixed (1M free executions/month).
 
   ⚠️ **Extra permission on F1/D1**: creating that resource group requires the
   deploying identity to have rights at the **subscription** scope (e.g.
-  Contributor on the subscription), not just Contributor on the `gencolink` RG.
+  Contributor on the subscription), not just Contributor on the `jencolink` RG.
   If your identity is scoped only to the RG, either widen it or switch to B1.
 
 ## Prerequisites (one-time)
 
-1. **Azure**: an existing resource group named `gencolink`; `az login`; correct
+1. **Azure**: an existing resource group named `jencolink`; `az login`; correct
    subscription selected. Terraform *reads* the RG, it does not create it.
 2. **Terraform state backend**: a one-time bootstrap, deliberately done via
    Azure CLI rather than Terraform (state storage can't depend on itself):
    ```bash
-   az group create -n gencolink-rg-tfstate -l eastus2
-   az storage account create -n gencolinktfstate -g gencolink-rg-tfstate \
+   az group create -n jencolink-rg-tfstate -l eastus2
+   az storage account create -n jencolinktfstate -g jencolink-rg-tfstate \
      --sku Standard_LRS --https-only true --allow-blob-public-access false
    az storage account blob-service-properties update \
-     --account-name gencolinktfstate -g gencolink-rg-tfstate \
+     --account-name jencolinktfstate -g jencolink-rg-tfstate \
      --enable-versioning true --enable-delete-retention true --delete-retention-days 7
    az role assignment create --assignee "$(az ad signed-in-user show --query id -o tsv)" \
      --role "Storage Blob Data Contributor" \
-     --scope "$(az storage account show -n gencolinktfstate -g gencolink-rg-tfstate --query id -o tsv)"
-   az storage container create --name tfstate --account-name gencolinktfstate --auth-mode login
+     --scope "$(az storage account show -n jencolinktfstate -g jencolink-rg-tfstate --query id -o tsv)"
+   az storage container create --name tfstate --account-name jencolinktfstate --auth-mode login
    ```
    Already done for this project. Costs a few cents/month.
 3. **OIDC for GitHub Actions**: an App Registration + federated credential with

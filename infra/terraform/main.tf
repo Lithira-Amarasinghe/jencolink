@@ -161,7 +161,7 @@ resource "azurerm_subnet" "app_integration" {
 # Clean naming: location-independent
 # ============================================================
 resource "azurerm_storage_account" "content" {
-  # Clean name: gencolink-prod-storage (location in tags, not name)
+  # Clean name: jencolink-prod-storage (location in tags, not name)
   name                       = replace("${local.app_name}-storage", "-", "")
   location                   = local.storage_location
   resource_group_name        = data.azurerm_resource_group.main.name

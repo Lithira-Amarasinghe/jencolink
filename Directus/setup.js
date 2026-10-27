@@ -37,7 +37,7 @@
  */
 
 const BASE = (process.env.DIRECTUS_URL ?? 'http://localhost:8055').replace(/\/$/, '');
-const EMAIL = process.env.ADMIN_EMAIL ?? 'admin@gencolink.com';
+const EMAIL = process.env.ADMIN_EMAIL ?? 'admin@jencolink.com';
 const PASS = process.env.ADMIN_PASSWORD;
 const STATIC_TOKEN = process.env.DIRECTUS_ADMIN_TOKEN;
 const KEY_VAULT_NAME = process.env.AZURE_KEY_VAULT_NAME;
@@ -238,9 +238,9 @@ const FAQS = [
 ];
 
 const COMPANY_DETAILS = {
-  brandName: 'Gencolink',
+  brandName: 'Jencolink',
   tagline: 'Building software that supports growth, innovation, and lasting value.',
-  email: 'hello@gencolink.com',
+  email: 'hello@jencolink.com',
   phonePrimary: '+94 71 4 280 380',
   phoneSecondary: '+94 77 5 690 380',
   linkedinUrl: 'https://www.linkedin.com',
@@ -266,10 +266,10 @@ const CONTACT_SECTION = {
 };
 
 const WHY_SECTION = {
-  eyebrow: 'Why Choose Gencolink',
+  eyebrow: 'Why Choose Jencolink',
   heading: 'A reliable partner for building modern software',
   description:
-    'At Gencolink, we believe successful software is built on clear communication, thoughtful engineering, and a genuine understanding of your goals. We focus on delivering practical, scalable solutions while building long-term relationships based on trust and collaboration.',
+    'At Jencolink, we believe successful software is built on clear communication, thoughtful engineering, and a genuine understanding of your goals. We focus on delivering practical, scalable solutions while building long-term relationships based on trust and collaboration.',
 };
 
 const FAQ_SECTION = {
@@ -648,7 +648,7 @@ async function ensureValuesCollection(token) {
   await createCollection(token, 'values', {
     icon: 'workspace_premium',
     sort_field: 'sort',
-    note: 'Value cards shown in the "Why Choose Gencolink" section of the website.',
+    note: 'Value cards shown in the "Why Choose Jencolink" section of the website.',
   });
 
   const fields = [
@@ -762,7 +762,7 @@ async function ensureWhySectionCollection(token) {
   await createCollection(token, 'why_section', {
     icon: 'workspace_premium',
     singleton: true,
-    note: 'Eyebrow, heading, and intro text for the "Why Choose Gencolink" section.',
+    note: 'Eyebrow, heading, and intro text for the "Why Choose Jencolink" section.',
   });
 
   const fields = [

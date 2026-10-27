@@ -6,11 +6,11 @@ brand
 
 ## Users
 
-Small and medium business owners (plus startup founders and professionals needing portfolios) evaluating Gencolink as a software development partner. They arrive from referrals or search, usually on a first visit, deciding whether this team is competent and trustworthy enough to contact. The job to be done: "convince me these people can build my software reliably."
+Small and medium business owners (plus startup founders and professionals needing portfolios) evaluating Jencolink as a software development partner. They arrive from referrals or search, usually on a first visit, deciding whether this team is competent and trustworthy enough to contact. The job to be done: "convince me these people can build my software reliably."
 
 ## Product Purpose
 
-Marketing site for Gencolink, a software development company (custom software, business management systems, web apps, portfolios, automation). The single conversion goal is the contact form — every section builds enough trust to justify sending a message. Content (services, values, FAQs, section copy, company details) is CMS-driven from Directus so the team can update it without redeploys.
+Marketing site for Jencolink, a software development company (custom software, business management systems, web apps, portfolios, automation). The single conversion goal is the contact form — every section builds enough trust to justify sending a message. Content (services, values, FAQs, section copy, company details) is CMS-driven from Directus so the team can update it without redeploys.
 
 ## Brand Personality
 

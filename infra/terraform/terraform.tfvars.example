@@ -7,9 +7,9 @@
 # You never set those by hand.
 
 # Existing resource group (Terraform reads it; it must already exist)
-resource_group_name = "gencolink"
+resource_group_name = "jencolink"
 
-project_name = "gencolink"
+project_name = "jencolink"
 environment  = "prod"
 
 # Primary location, with optional per-service overrides (uncomment to change)
@@ -32,13 +32,13 @@ sql_database_name  = "directus"
 # Export it as the GITHUB_TOKEN environment variable before running
 # `terraform apply` - the provider reads it automatically (see providers.tf).
 # Leave github_repo_token unset here; it exists only as a fallback override.
-github_repo_url = "https://github.com/yourname/gencolink"
+github_repo_url = "https://github.com/yourname/jencolink"
 github_owner      = "yourname"
-github_repository = "gencolink"
+github_repository = "jencolink"
 github_branch     = "master"
 
 # Directus (only the admin email is user-supplied)
-directus_admin_email       = "admin@gencolink.com"
+directus_admin_email       = "admin@jencolink.com"
 directus_refresh_token_ttl = 7
 
 # Azure Communication Services - managed-identity auth (no connection string / key).
@@ -55,7 +55,7 @@ app_service_sku    = "B1" # Minimum viable tier; F1/Free is unusable for Directu
 
 # Tags
 tags = {
-  Project     = "Gencolink"
+  Project     = "Jencolink"
   Environment = "Production"
   ManagedBy   = "Terraform"
   Owner       = "Your Name"

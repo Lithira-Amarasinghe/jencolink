@@ -1,7 +1,7 @@
-# Gencolink — PRODUCT.md
+# Jencolink — PRODUCT.md
 
 ## What it is
-Marketing site for Gencolink, a software engineering studio in Sri Lanka that builds
+Marketing site for Jencolink, a software engineering studio in Sri Lanka that builds
 custom software, business websites, automation, and management systems for startups and
 growing businesses. Single-page Angular 20 app (standalone components, signals).
 

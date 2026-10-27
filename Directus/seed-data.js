@@ -4,13 +4,13 @@
  * Extracted from: http://localhost:8055
  *
  * Usage:
- *   TARGET_URL=https://gencolink-prod-directus.azurecontainerapps.io \
+ *   TARGET_URL=https://jencolink-prod-directus.azurecontainerapps.io \
  *   TARGET_PASS=... \
  *   node seed-data.js
  */
 
-const TARGET_URL = (process.env.TARGET_URL ?? 'https://gencolink-prod-directus.azurecontainerapps.io').replace(/\/$/, '');
-const TARGET_EMAIL = process.env.TARGET_EMAIL ?? 'admin@gencolink.com';
+const TARGET_URL = (process.env.TARGET_URL ?? 'https://jencolink-prod-directus.azurecontainerapps.io').replace(/\/$/, '');
+const TARGET_EMAIL = process.env.TARGET_EMAIL ?? 'admin@jencolink.com';
 const TARGET_PASS = process.env.TARGET_PASS;
 
 // ─── DATA FROM LOCAL DIRECTUS ─────────────────────────────────────────────
@@ -59,9 +59,9 @@ const FAQS = [
 ];
 
 const COMPANY_DETAILS = {
-  brandName: 'Gencolink',
+  brandName: 'Jencolink',
   tagline: 'Building software that supports growth, innovation, and lasting value.',
-  email: 'hello@gencolink.com',
+  email: 'hello@jencolink.com',
   phonePrimary: '+94 71 4 280 380',
   phoneSecondary: '+94 77 5 690 380',
   linkedinUrl: 'https://www.linkedin.com',

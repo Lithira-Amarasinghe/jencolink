@@ -51,10 +51,10 @@ jobs:
 
       - name: Inject Directus Runtime Config to browser dir
         run: |
-          mkdir -p dist/gencolink/browser
+          mkdir -p dist/jencolink/browser
           # Directus API URL injected from GitHub secrets (set by Terraform)
           # Falls back to localhost only if explicitly needed for local dev
-          cat > dist/gencolink/browser/runtime-config.js << 'EOF'
+          cat > dist/jencolink/browser/runtime-config.js << 'EOF'
           window.__DIRECTUS_URL__ = '${{ secrets.DIRECTUS_API_URL }}';
           window.__API_TIMEOUT__ = 30000;
           window.__APP_ENV__ = 'production';
@@ -62,23 +62,23 @@ jobs:
 
       - name: Copy staticwebapp.config.json to browser dir
         run: |
-          mkdir -p dist/gencolink/browser
-          cp staticwebapp.config.json dist/gencolink/browser/
+          mkdir -p dist/jencolink/browser
+          cp staticwebapp.config.json dist/jencolink/browser/
 
       - name: Verify build artifacts
         run: |
-          ls -la dist/gencolink/
-          echo "Build size: $(du -sh dist/gencolink/)"
+          ls -la dist/jencolink/
+          echo "Build size: $(du -sh dist/jencolink/)"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: angular-build
-          path: Website/dist/gencolink/
+          path: Website/dist/jencolink/
           retention-days: 7
 
       - name: Verify artifact contents before upload
-        run: ls -la dist/gencolink/ | head -20
+        run: ls -la dist/jencolink/ | head -20
 
   deploy:
     name: Deploy to Azure Static Web App
@@ -104,7 +104,7 @@ jobs:
       - name: Prepare build directory
         run: |
           mkdir -p build
-          # Artifact only contains contents of Website/dist/gencolink/ (not the full path)
+          # Artifact only contains contents of Website/dist/jencolink/ (not the full path)
           cp -r ./build-temp/* ./build/
           rm -rf ./build-temp
 

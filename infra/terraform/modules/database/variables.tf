@@ -10,7 +10,7 @@ variable "location" {
 
 variable "project_name" {
   type        = string
-  description = "Project name (e.g., gencolink)"
+  description = "Project name (e.g., jencolink)"
 }
 
 variable "environment" {

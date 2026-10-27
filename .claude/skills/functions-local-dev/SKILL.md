@@ -1,6 +1,6 @@
 ---
 name: functions-local-dev
-description: Set up and run the Gencolink Azure Functions app (functions/) locally. Use when the user asks to "start functions", "run the contact-email function locally", or when functions/local.settings.json is missing.
+description: Set up and run the Jencolink Azure Functions app (functions/) locally. Use when the user asks to "start functions", "run the contact-email function locally", or when functions/local.settings.json is missing.
 disable-model-invocation: true
 ---
 

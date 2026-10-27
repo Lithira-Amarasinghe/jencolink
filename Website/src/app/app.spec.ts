@@ -18,7 +18,7 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render Gencolink hero', () => {
+  it('should render Jencolink hero', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;

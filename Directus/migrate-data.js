@@ -5,16 +5,16 @@
  *
  * Usage:
  *   SOURCE_URL=http://localhost:8055 SOURCE_PASS=GencoCMS2025! \
- *   TARGET_URL=https://gencolink-prod-directus.azurecontainerapps.io TARGET_PASS=... \
+ *   TARGET_URL=https://jencolink-prod-directus.azurecontainerapps.io TARGET_PASS=... \
  *   node migrate-data.js
  */
 
 const SOURCE_URL = (process.env.SOURCE_URL ?? 'http://localhost:8055').replace(/\/$/, '');
-const SOURCE_EMAIL = process.env.SOURCE_EMAIL ?? 'admin@gencolink.com';
+const SOURCE_EMAIL = process.env.SOURCE_EMAIL ?? 'admin@jencolink.com';
 const SOURCE_PASS = process.env.SOURCE_PASS;
 
-const TARGET_URL = (process.env.TARGET_URL ?? 'https://gencolink-prod-directus.azurecontainerapps.io').replace(/\/$/, '');
-const TARGET_EMAIL = process.env.TARGET_EMAIL ?? 'admin@gencolink.com';
+const TARGET_URL = (process.env.TARGET_URL ?? 'https://jencolink-prod-directus.azurecontainerapps.io').replace(/\/$/, '');
+const TARGET_EMAIL = process.env.TARGET_EMAIL ?? 'admin@jencolink.com';
 const TARGET_PASS = process.env.TARGET_PASS;
 
 const COLLECTIONS = ['services', 'products', 'values', 'faqs', 'why_section', 'faq_section', 'services_section', 'contact_section', 'company_details'];

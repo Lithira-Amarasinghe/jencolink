@@ -1,7 +1,7 @@
 {
-  "name": "gencolink-functions",
+  "name": "jencolink-functions",
   "version": "2.0.0",
-  "description": "Serverless backend for Gencolink — contact-email notifications via Azure Communication Services",
+  "description": "Serverless backend for Jencolink — contact-email notifications via Azure Communication Services",
   "scripts": {
     "start": "func start",
     "build": "echo 'No build step required for JS functions'"

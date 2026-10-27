@@ -11,7 +11,7 @@
 
 ### Principle: Location-Independent Naming
 ```
-Resource names: gencolink-{service}-{purpose}
+Resource names: jencolink-{service}-{purpose}
 Location: Determined by service-specific variables
 Region info: In tags, not in name
 ```
@@ -44,8 +44,8 @@ variable "keyvault_location" { default = "eastus2" }
 
 ### 2. **Clean Resource Naming**
 ```hcl
-# OLD: gencolink-prod-eus2-directus
-# NEW: gencolink-directus (location in tags, not name)
+# OLD: jencolink-prod-eus2-directus
+# NEW: jencolink-directus (location in tags, not name)
 
 locals {
   # Project-based naming (clean, portable)
@@ -153,7 +153,7 @@ locals {
 ✅ **Clean Naming**
 - No internal details in names
 - Portable across regions
-- Easy to understand (gencolink-directus, not gencolink-prod-eus2-directus)
+- Easy to understand (jencolink-directus, not jencolink-prod-eus2-directus)
 
 ✅ **Enterprise Tags**
 - Location visible in tags (not name)
@@ -197,7 +197,7 @@ locals {
 ## Example terraform.tfvars (New Format)
 
 ```hcl
-project_name     = "gencolink"
+project_name     = "jencolink"
 environment      = "prod"
 cost_center      = "engineering"
 

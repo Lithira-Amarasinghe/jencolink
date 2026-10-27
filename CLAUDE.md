@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a multi-project repo, not a single app:
 
 - **`Directus/`** — Directus 10.13.1 headless CMS, run via Docker Compose, SQLite backend. Manages "What We Do" and "Our Products" content so the website can be updated without redeploys.
-- **`Website/`** — Angular 20 (standalone components, signals) frontend, project name `gencolink`.
+- **`Website/`** — Angular 20 (standalone components, signals) frontend, project name `jencolink`.
 - **`functions/`** — Azure Functions (JS, Node ≥18). Single HTTP function `send-contact-email` using `@azure/communication-email`. It's triggered by a **Directus Flow** (webhook on the `contact_submissions` collection) — this wiring lives in Directus config, not in code, so grepping `functions/` alone won't reveal the trigger.
 
 Integration flow: Directus `GET /items/site_content` → `Website/public/runtime-config.js` (sets `window.__DIRECTUS_URL__`) → Angular `SiteContentService` (falls back to defaults if the fetch fails). **`runtime-config.js` is the only place to change the CMS URL for prod** — no rebuild needed, easy to miss.

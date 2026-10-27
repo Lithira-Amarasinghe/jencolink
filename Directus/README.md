@@ -1,6 +1,6 @@
 # Directus CMS
 
-Headless CMS for the Gencolink website. Controls every section's heading/copy, the
+Headless CMS for the Jencolink website. Controls every section's heading/copy, the
 Services/Products/Values/FAQ lists, and company contact details — without requiring a
 frontend redeploy.
 
@@ -73,7 +73,7 @@ Changes appear on the website on the next page load — no rebuild or redeploy n
 | `body` | One-line description |
 | `icon` | One of `workflow` `data` `lock` `globe` |
 
-### Values (`values`) — items in the "Why Choose Gencolink" section
+### Values (`values`) — items in the "Why Choose Jencolink" section
 
 | Field | Notes |
 |---|---|
@@ -95,7 +95,7 @@ Each of these controls the eyebrow/heading/intro copy for one section — the co
 | Collection | Section | Fields |
 |---|---|---|
 | `services_section` | "Our Services" | `eyebrow`, `heading`, `description` |
-| `why_section` | "Why Choose Gencolink" | `eyebrow`, `heading`, `description` |
+| `why_section` | "Why Choose Jencolink" | `eyebrow`, `heading`, `description` |
 | `faq_section` | "Frequently Asked Questions" | `eyebrow`, `heading` |
 | `contact_section` | "Contact" | `eyebrow`, `heading`, `description` |
 
