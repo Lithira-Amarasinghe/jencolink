@@ -1,0 +1,154 @@
+/* Rules that exist only so the static prototype can run the live layout.
+   Visual language stays in styles.css, copied from the Website project. */
+
+.brand-logo {
+  display: none;
+  height: 40px;
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.brand--footer .brand-logo {
+  height: 34px;
+}
+
+.brand-logo--for-dark {
+  display: block;
+}
+
+:root[data-theme="light"] .brand-logo--for-dark {
+  display: none;
+}
+
+:root[data-theme="light"] .brand-logo--for-light {
+  display: block;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .brand-logo--for-dark {
+    display: none;
+  }
+
+  :root:not([data-theme]) .brand-logo--for-light {
+    display: block;
+  }
+
+  :root:not([data-theme]) .theme-toggle-thumb {
+    transform: translateX(26px);
+  }
+
+  :root:not([data-theme]) .icon-moon {
+    display: none;
+  }
+
+  :root:not([data-theme]) .icon-sun {
+    display: block;
+  }
+}
+
+:root[data-theme="light"] .theme-toggle-thumb {
+  transform: translateX(26px);
+}
+
+.icon-sun {
+  display: none;
+}
+
+:root[data-theme="light"] .icon-moon {
+  display: none;
+}
+
+:root[data-theme="light"] .icon-sun {
+  display: block;
+}
+
+.menu-button .icon-close {
+  display: none;
+}
+
+.menu-button[aria-expanded="true"] .icon-open {
+  display: none;
+}
+
+.menu-button[aria-expanded="true"] .icon-close {
+  display: block;
+}
+
+.mobile-nav {
+  display: none;
+}
+
+.mobile-nav.is-open {
+  display: flex;
+}
+
+html.nav-open,
+html.nav-open body {
+  overflow: hidden;
+}
+
+#services,
+#why,
+#faq,
+#contact {
+  scroll-margin-top: 92px;
+}
+
+.hero-canvas {
+  pointer-events: none;
+}
+
+.toast[hidden],
+.toast [hidden],
+.form-alert[hidden],
+.submit-button [hidden] {
+  display: none !important;
+}
+
+.form-note {
+  margin: -6px 0 0;
+  max-width: 48ch;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.contact-section input:focus-visible,
+.contact-section textarea:focus-visible {
+  outline: none;
+}
+
+@media (max-width: 760px) {
+  .brand-logo {
+    height: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .site-header {
+    animation: header-in 0.7s var(--ease-out) 0.12s both;
+  }
+}
+
+@keyframes header-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    animation: none;
+  }
+}
