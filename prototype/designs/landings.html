@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Jencolink landing directions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #05091c;
+        --ink: #0b1330;
+        --paper: #f6f8fd;
+        --hi: #ffffff;
+        --body: #b9c5de;
+        --dim: #8391b4;
+        --accent: #2ec5ff;
+        --signal: #0f80cb;
+        --line: rgba(238, 243, 251, 0.16);
+        --display: "Archivo", ui-sans-serif, sans-serif;
+        --sans: "Hanken Grotesk", ui-sans-serif, sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, monospace;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; width: 1440px; background: #000; }
+      button, a { font: inherit; color: inherit; }
+      img { display: block; }
+
+      .frame {
+        position: relative;
+        width: 1440px;
+        height: 900px;
+        overflow: hidden;
+      }
+
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        height: 84px;
+        padding: 0 56px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--display);
+        font-weight: 700;
+        font-stretch: 115%;
+        font-size: 20px;
+        letter-spacing: -0.01em;
+        text-decoration: none;
+      }
+
+      .brand img { width: 38px; height: auto; }
+
+      .nav {
+        display: flex;
+        gap: 4px;
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+
+      .nav span { padding: 8px 14px; }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid transparent;
+        padding: 12px 20px;
+        font-family: var(--sans);
+        font-size: 14px;
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      /* ---------- 1. Signal field ---------- */
+
+      .signal {
+        background:
+          radial-gradient(900px 520px at 50% 42%, rgba(46, 197, 255, 0.16), transparent 68%),
+          radial-gradient(rgba(185, 197, 222, 0.45) 1.15px, transparent 1.25px) 0 0 / 26px 26px,
+          var(--bg);
+        color: var(--hi);
+      }
+
+      .signal .cta { background: #eef3fb; color: var(--ink); }
+      .signal .nav { color: #d5deef; }
+
+      .signal-constellation {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .signal-stage {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: calc(900px - 84px);
+        text-align: center;
+        padding: 0 80px 24px;
+      }
+
+      .practices {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin: 0 0 28px;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #c5d2e8;
+      }
+
+      .practices i { color: var(--accent); font-style: normal; }
+      .practices .on { color: var(--accent); }
+
+      .word {
+        margin: 0;
+        font-family: var(--display);
+        font-weight: 800;
+        font-stretch: 118%;
+        font-size: 148px;
+        line-height: 0.84;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .vision {
+        margin: 28px 0 0;
+        max-width: 15ch;
+        font-family: var(--display);
+        font-weight: 700;
+        font-stretch: 112%;
+        font-size: 42px;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        text-wrap: balance;
+      }
+
+      .signal-mark {
+        position: absolute;
+        right: 64px;
+        bottom: 48px;
+        width: 150px;
+        z-index: 1;
+      }
+
+      /* ---------- 2. Gallery mark ---------- */
+
+      .gallery { background: var(--paper); color: var(--ink); }
+      .gallery .nav { color: #2a3558; }
+      .gallery .cta { background: var(--ink); color: white; }
+
+      .gallery-main {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        height: calc(900px - 84px);
+        align-items: center;
+        padding: 0 72px 20px 0;
+      }
+
+      .gallery-mark {
+        width: 520px;
+        margin-left: 48px;
+      }
+
+      .gallery-copy { padding-left: 12px; max-width: 520px; }
+
+      .kicker {
+        margin: 0 0 18px;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--signal);
+      }
+
+      .gallery h1 {
+        margin: 0;
+        font-family: var(--display);
+        font-weight: 750;
+        font-stretch: 114%;
+        font-size: 58px;
+        line-height: 0.98;
+        letter-spacing: -0.035em;
+        text-wrap: balance;
+      }
+
+      .rows { margin: 36px 0 0; padding: 0; list-style: none; }
+
+      .rows li {
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        gap: 8px 14px;
+        padding: 16px 0;
+        border-top: 1px solid rgba(11, 19, 48, 0.14);
+      }
+
+      .rows li:last-child { border-bottom: 1px solid rgba(11, 19, 48, 0.14); }
+
+      .rows b {
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--signal);
+        padding-top: 6px;
+      }
+
+      .rows strong {
+        display: block;
+        font-family: var(--display);
+        font-weight: 680;
+        font-stretch: 110%;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+      }
+
+      .rows p {
+        margin: 4px 0 0;
+        font-family: var(--sans);
+        font-size: 15.5px;
+        line-height: 1.45;
+        color: #3d4b68;
+      }
+
+      /* ---------- 3. Thread ---------- */
+
+      .thread {
+        background:
+          radial-gradient(700px 480px at 78% 46%, rgba(15, 128, 203, 0.28), transparent 70%),
+          var(--bg);
+        color: var(--hi);
+      }
+
+      .thread .bar { height: 76px; }
+      .thread-link {
+        margin-left: auto;
+        font-family: var(--sans);
+        font-weight: 650;
+        font-size: 15px;
+        text-decoration: none;
+        color: var(--accent);
+      }
+
+      .thread-main {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        align-items: center;
+        height: 640px;
+        padding: 0 72px 0 64px;
+      }
+
+      .thread h1 {
+        margin: 0;
+        max-width: 8.2ch;
+        font-family: var(--display);
+        font-weight: 780;
+        font-stretch: 116%;
+        font-size: 84px;
+        line-height: 0.9;
+        letter-spacing: -0.04em;
+        text-wrap: balance;
+      }
+
+      .thread h1 em {
+        display: block;
+        margin-top: 18px;
+        font-style: normal;
+        font-size: 28px;
+        font-weight: 650;
+        font-stretch: 108%;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        color: var(--accent);
+        max-width: 16ch;
+      }
+
+      .thread-mark { width: 460px; justify-self: end; }
+
+      .thread-foot {
+        display: grid;
+        grid-template-columns: 180px 1fr 1fr 1fr;
+        align-items: end;
+        gap: 24px;
+        margin: 0 64px;
+        padding-top: 22px;
+        border-top: 1px solid var(--line);
+      }
+
+      .where {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #c5d2e6;
+      }
+
+      .thread-foot article strong {
+        display: block;
+        font-family: var(--display);
+        font-weight: 680;
+        font-stretch: 110%;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+      }
+
+      .thread-foot article span {
+        display: block;
+        margin-top: 6px;
+        font-family: var(--sans);
+        font-size: 14.5px;
+        line-height: 1.4;
+        color: var(--body);
+      }
+
+      .thread-foot article.is-on strong { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <section class="frame signal" id="signal">
+      <svg class="signal-constellation" viewBox="0 0 1440 900" aria-hidden="true">
+        <g fill="none" stroke="#2ec5ff" stroke-width="1.2" opacity="0.55">
+          <path d="M150 140 L280 210 L220 280" />
+          <path d="M280 210 L430 120 L560 180" />
+          <path d="M1240 120 L1100 180 L1200 250" />
+          <path d="M180 730 L320 650 L270 810" />
+        </g>
+        <g fill="#2ec5ff">
+          <circle cx="150" cy="140" r="3.2" />
+          <circle cx="280" cy="210" r="4.2" />
+          <circle cx="220" cy="280" r="2.6" />
+          <circle cx="430" cy="120" r="2.8" />
+          <circle cx="560" cy="180" r="3" />
+          <circle cx="1240" cy="120" r="3.4" />
+          <circle cx="1100" cy="180" r="2.6" />
+          <circle cx="1200" cy="250" r="3.2" />
+          <circle cx="180" cy="730" r="2.8" />
+          <circle cx="320" cy="650" r="3.5" />
+          <circle cx="270" cy="810" r="2.4" />
+        </g>
+      </svg>
+      <header class="bar">
+        <a class="brand" href="#signal">
+          <img src="../assets/logo-for-dark.png" alt="" />
+          Jencolink
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <span>Services</span>
+          <span>Why us</span>
+          <span>FAQ</span>
+          <span>Contact</span>
+        </nav>
+        <a class="cta" href="#signal">Let's Talk →</a>
+      </header>
+      <div class="signal-stage">
+        <p class="practices">
+          <span>Web Apps</span><i>·</i><span class="on">Cloud Solutions</span><i>·</i><span>Digital Automations</span>
+        </p>
+        <p class="word">Jencolink</p>
+        <h1 class="vision">A better and more joyous future through the power of computing</h1>
+      </div>
+      <img class="signal-mark" src="../assets/logo-for-dark.png" alt="" />
+    </section>
+
+    <section class="frame gallery" id="gallery">
+      <header class="bar">
+        <a class="brand" href="#gallery">
+          <img src="../assets/logo-for-light.png" alt="" />
+          Jencolink
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <span>Services</span>
+          <span>Why us</span>
+          <span>FAQ</span>
+          <span>Contact</span>
+        </nav>
+        <a class="cta" href="#gallery">Let's Talk →</a>
+      </header>
+      <div class="gallery-main">
+        <img class="gallery-mark" src="../assets/logo-for-light.png" alt="" />
+        <div class="gallery-copy">
+          <p class="kicker">Software engineering studio</p>
+          <h1>A better and more joyous future through the power of computing</h1>
+          <ul class="rows">
+            <li>
+              <b>01</b>
+              <div>
+                <strong>Web Apps</strong>
+                <p>Sites and products people come back to.</p>
+              </div>
+            </li>
+            <li>
+              <b>02</b>
+              <div>
+                <strong>Cloud Solutions</strong>
+                <p>Systems that stay reliable as you grow.</p>
+              </div>
+            </li>
+            <li>
+              <b>03</b>
+              <div>
+                <strong>Digital Automations</strong>
+                <p>Less manual work in the ordinary day.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="frame thread" id="thread">
+      <header class="bar">
+        <a class="brand" href="#thread">
+          <img src="../assets/logo-for-dark.png" alt="" />
+          Jencolink
+        </a>
+        <a class="thread-link" href="#thread">Let's talk →</a>
+      </header>
+      <div class="thread-main">
+        <h1>
+          A better and more joyous future
+          <em>through the power of computing</em>
+        </h1>
+        <img class="thread-mark" src="../assets/logo-for-dark.png" alt="" />
+      </div>
+      <div class="thread-foot">
+        <p class="where">Sri Lanka</p>
+        <article>
+          <strong>Web Apps</strong>
+          <span>Sites and products people come back to.</span>
+        </article>
+        <article class="is-on">
+          <strong>Cloud Solutions</strong>
+          <span>Systems that stay reliable as you grow.</span>
+        </article>
+        <article>
+          <strong>Digital Automations</strong>
+          <span>Less manual work in the ordinary day.</span>
+        </article>
+      </div>
+    </section>
+  </body>
+</html>
