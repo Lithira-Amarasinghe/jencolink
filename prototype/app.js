@@ -1,5 +1,5 @@
 (() => {
-  const STORAGE_KEY = "gencolink-prototype-theme";
+  const STORAGE_KEY = "jencolink-prototype-theme";
   const root = document.documentElement;
   const header = document.querySelector(".site-header");
   const progress = document.querySelector(".scroll-progress");
@@ -18,7 +18,8 @@
 
   const readStored = () => {
     try {
-      const value = localStorage.getItem(STORAGE_KEY);
+      const value =
+        localStorage.getItem(STORAGE_KEY) || localStorage.getItem("gencolink-prototype-theme");
       return value === "light" || value === "dark" ? value : "system";
     } catch {
       return "system";
@@ -203,8 +204,8 @@ function initHero(reducedMotion) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const linkDist = 132;
-  const mouseRadius = 210;
+  const linkDist = 148;
+  const mouseRadius = 260;
   let width = 0;
   let height = 0;
   let nodes = [];
@@ -214,6 +215,8 @@ function initHero(reducedMotion) {
   let pyT = -9999;
   let px = -9999;
   let py = -9999;
+  let sx = -9999;
+  let sy = -9999;
   let lastRealMoveAt = -Infinity;
   let autoPilot = false;
   let autoX = 0;
@@ -221,6 +224,13 @@ function initHero(reducedMotion) {
   let autoVX = 0;
   let autoVY = 0;
   let raf = 0;
+  let lane = null;
+  let meterShown = -1;
+  const pulses = [];
+  const meter = document.getElementById("hero-meter-count");
+  const signal = document.getElementById("hero-signal");
+  const laneButtons = [...scene.querySelectorAll(".hero-lanes button")];
+  const defaultSignal = signal?.textContent || "";
 
   const washes = [
     { x: 0.22, y: 0.32, r: 0.5, hue: "b", vx: 0.01, vy: 0.006, phase: 0 },
@@ -325,6 +335,35 @@ function initHero(reducedMotion) {
 
     px += (pxT - px) * 0.24;
     py += (pyT - py) * 0.24;
+    const field = scene.getBoundingClientRect();
+    sx = px - field.left;
+    sy = py - field.top;
+
+    for (const pulse of pulses) pulse.age += 1;
+    while (pulses.length && pulses[0].age > 36) pulses.shift();
+
+    const mx = pointerInside ? px / window.innerWidth - 0.5 : 0;
+    const my = pointerInside ? py / window.innerHeight - 0.5 : 0;
+    scene.style.setProperty("--mx", mx.toFixed(3));
+    scene.style.setProperty("--my", my.toFixed(3));
+
+    if (!reducedMotion) {
+      wordmark.querySelectorAll(".hero-wordmark-char").forEach((el) => {
+        const body = el.querySelector(".hero-char-body");
+        if (!body) return;
+        if (!pointerInside) {
+          body.style.transform = "";
+          return;
+        }
+        const rect = el.getBoundingClientRect();
+        const dx = px - (rect.left + rect.width / 2);
+        const dy = py - (rect.top + rect.height / 2);
+        const dist = Math.hypot(dx, dy) || 1;
+        const influence = Math.max(0, 1 - dist / 360);
+        const mag = influence * 22;
+        body.style.transform = `translate(${((dx / dist) * mag).toFixed(2)}px, ${((dy / dist) * mag).toFixed(2)}px)`;
+      });
+    }
 
     wordmark.querySelectorAll(".hero-block").forEach((block) => {
       if (pointerInside) {
@@ -346,6 +385,8 @@ function initHero(reducedMotion) {
 
     const t = performance.now() / 1000;
     const mr2 = mouseRadius * mouseRadius;
+    const beacon = currentBeacon();
+    let inReach = 0;
     for (const node of nodes) {
       const ax = Math.cos(t * 0.5 + node.phase) * node.amp;
       const ay = Math.sin(t * 0.42 + node.phase * 1.3) * node.amp;
@@ -354,14 +395,37 @@ function initHero(reducedMotion) {
       if (pointerInside) {
         const nx = node.hx + node.ox;
         const ny = node.hy + node.oy;
-        const dx = nx - px;
-        const dy = ny - py;
+        const dx = nx - sx;
+        const dy = ny - sy;
         const d2 = dx * dx + dy * dy;
         if (d2 < mr2 && d2 > 0.01) {
           const d = Math.sqrt(d2);
-          const force = (1 - d / mouseRadius) * 3.2;
+          inReach += 1;
+          const force = (1 - d / mouseRadius) * 4.4;
           node.vx += (dx / d) * force;
           node.vy += (dy / d) * force;
+        }
+      }
+      if (beacon) {
+        const bx = node.hx + node.ox - beacon.x;
+        const by = node.hy + node.oy - beacon.y;
+        const bd = Math.hypot(bx, by);
+        if (bd < 460 && bd > 10) {
+          const pull = (1 - bd / 460) * 0.7;
+          node.vx -= (bx / bd) * pull;
+          node.vy -= (by / bd) * pull;
+        }
+      }
+      for (const pulse of pulses) {
+        const rdx = node.hx + node.ox - pulse.x;
+        const rdy = node.hy + node.oy - pulse.y;
+        const rd = Math.hypot(rdx, rdy) || 1;
+        const ring = pulse.age * 16;
+        const gap = Math.abs(rd - ring);
+        if (gap < 56) {
+          const kick = (1 - gap / 56) * 3.1;
+          node.vx += (rdx / rd) * kick;
+          node.vy += (rdy / rd) * kick;
         }
       }
       node.vx *= 0.86;
@@ -369,6 +433,23 @@ function initHero(reducedMotion) {
       node.ox += node.vx;
       node.oy += node.vy;
     }
+    if (meter && inReach !== meterShown) {
+      meterShown = inReach;
+      meter.textContent = String(inReach);
+    }
+  };
+
+  const currentBeacon = () => {
+    if (!lane) return null;
+    const rect = scene.getBoundingClientRect();
+    const spots = {
+      web: [0.18, 0.62],
+      cloud: [0.82, 0.3],
+      flow: [0.5, 0.8],
+    };
+    const spot = spots[lane];
+    if (!spot) return null;
+    return { x: rect.width * spot[0], y: rect.height * spot[1] };
   };
 
   const render = (time, staticFrame) => {
@@ -396,7 +477,7 @@ function initHero(reducedMotion) {
       const y = node.hy + node.oy;
       let near = 0;
       if (pointerInside) {
-        const d = Math.hypot(x - px, y - py);
+        const d = Math.hypot(x - sx, y - sy);
         near = d < mouseRadius ? 1 - d / mouseRadius : 0;
       }
       return { x, y, hub: node.hub, size: node.size, near };
@@ -426,7 +507,7 @@ function initHero(reducedMotion) {
         if (point.near <= 0) continue;
         ctx.strokeStyle = `rgba(${rgbA},${(point.near * 0.55).toFixed(3)})`;
         ctx.beginPath();
-        ctx.moveTo(px, py);
+        ctx.moveTo(sx, sy);
         ctx.lineTo(point.x, point.y);
         ctx.stroke();
       }
@@ -440,7 +521,62 @@ function initHero(reducedMotion) {
       ctx.fillStyle = `rgba(${rgbA},${alpha.toFixed(3)})`;
       ctx.fill();
     }
+
+    const beacon = currentBeacon();
+    if (beacon) {
+      const pulse = staticFrame ? 0 : Math.sin(time * 3) * 5;
+      ctx.beginPath();
+      ctx.arc(beacon.x, beacon.y, 16 + pulse, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${rgbA},0.9)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(beacon.x, beacon.y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${rgbA},0.95)`;
+      ctx.fill();
+    }
+
+    for (const pulse of pulses) {
+      const alpha = Math.max(0, 1 - pulse.age / 36);
+      ctx.beginPath();
+      ctx.arc(pulse.x, pulse.y, pulse.age * 16, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${rgbA},${(alpha * 0.75).toFixed(3)})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
   };
+
+  const applyLane = (button) => {
+    lane = button ? button.dataset.lane : null;
+    for (const item of laneButtons) {
+      item.setAttribute("aria-checked", item === button ? "true" : "false");
+    }
+    if (signal) signal.textContent = button ? button.dataset.copy || defaultSignal : defaultSignal;
+  };
+
+  for (const button of laneButtons) {
+    button.addEventListener("click", () => {
+      applyLane(lane === button.dataset.lane ? null : button);
+    });
+  }
+
+  scene.querySelector(".hero-lanes")?.addEventListener("keydown", (event) => {
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+    const index = laneButtons.indexOf(document.activeElement);
+    if (index < 0) return;
+    event.preventDefault();
+    const direction = event.key === "ArrowRight" ? 1 : -1;
+    const next = laneButtons[(index + direction + laneButtons.length) % laneButtons.length];
+    next.focus();
+    applyLane(next);
+  });
+
+  scene.addEventListener("pointerdown", (event) => {
+    if (reducedMotion || event.target.closest("button, a")) return;
+    const rect = scene.getBoundingClientRect();
+    if (pulses.length > 4) pulses.shift();
+    pulses.push({ x: event.clientX - rect.left, y: event.clientY - rect.top, age: 0 });
+  });
 
   if (!reducedMotion) {
     scene.addEventListener("pointermove", (event) => {

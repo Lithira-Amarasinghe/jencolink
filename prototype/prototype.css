@@ -152,3 +152,117 @@ html.nav-open body {
     animation: none;
   }
 }
+
+/* Landing field — the chain, the practice switches, and the live readout. */
+
+.hero-canvas {
+  position: absolute;
+  opacity: 0.82;
+}
+
+.hero-mark {
+  position: absolute;
+  right: max(4vw, 28px);
+  bottom: 11vh;
+  z-index: 0;
+  width: min(26vw, 240px);
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.28;
+  transform: translate(calc(var(--mx, 0) * 28px), calc(var(--my, 0) * 18px))
+    rotate(calc(var(--mx, 0) * 10deg));
+}
+
+.hero-mark.brand-logo--for-light {
+  opacity: 0.34;
+}
+
+.hero-lanes {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  animation: hero-rise 0.7s var(--ease-out) 0.2s both;
+}
+
+.hero-lanes button {
+  appearance: none;
+  border: 1px solid var(--line-1);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.05vw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-body);
+  transition:
+    color 200ms var(--ease-out),
+    border-color 200ms var(--ease-out),
+    background-color 200ms var(--ease-out);
+}
+
+.hero-lanes button:hover,
+.hero-lanes button:focus-visible,
+.hero-lanes button[aria-checked="true"] {
+  color: var(--text-hi);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.hero-char-body {
+  display: inline-block;
+  will-change: transform;
+}
+
+.hero-signal {
+  margin: 4px 0 0;
+  max-width: 42ch;
+  min-height: 3.2em;
+  font-size: clamp(15px, 1.5vw, 17px);
+  line-height: 1.55;
+  text-align: center;
+  color: var(--text-body);
+  text-wrap: pretty;
+}
+
+.hero-meter {
+  margin: 2px 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .hero-mark {
+    width: 72px;
+    right: 16px;
+    bottom: 40px;
+    opacity: 0.22;
+  }
+
+  .hero-lanes button {
+    letter-spacing: 0.08em;
+    padding: 8px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-mark,
+  .hero-lanes,
+  .hero-char-body {
+    animation: none;
+    transform: none;
+  }
+
+  .hero-mark {
+    transform: none;
+  }
+}
