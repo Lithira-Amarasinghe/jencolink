@@ -11,8 +11,8 @@
       name="description"
       content="Jencolink designs, builds, and scales intelligent software: custom web applications, business management systems, eCommerce, and automation — engineered with care."
     />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#130947" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f8fd" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#10063F" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f4fa" />
     <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="prototype.css" />
@@ -24,6 +24,9 @@
             localStorage.getItem("gencolink-prototype-theme");
           if (theme === "light" || theme === "dark") {
             document.documentElement.setAttribute("data-theme", theme);
+          }
+          if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            document.documentElement.classList.add("js-reveal");
           }
         } catch (e) {}
       })();

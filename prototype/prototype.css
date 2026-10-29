@@ -10,29 +10,67 @@
 
 :root {
   --navy: #150571;
-  --amethyst: #130947;
-  --mission: #eef3fb;
-  --bg: var(--amethyst);
-  --bg-raise: #1c105c;
-  --glass: rgba(19, 9, 71, 0.78);
-  --on-accent: var(--amethyst);
-  --btn-fg: var(--amethyst);
-  --invert-bg: #1c105c;
+  --ink: #10063f;
+  --mission: #f4f1fb;
+  --bg: var(--ink);
+  --bg-raise: #1b104c;
+  --glass: rgba(16, 6, 63, 0.84);
+  --text: #f4f1fb;
+  --text-body: #c9c4de;
+  --text-dim: #9d98b6;
+  --line-1: rgba(244, 241, 251, 0.16);
+  --line-2: rgba(244, 241, 251, 0.08);
+  --on-accent: var(--ink);
+  --btn-bg: #f4f1fb;
+  --btn-fg: var(--ink);
+  --invert-bg: #1b104c;
+  --invert-title: #f4f1fb;
+  --invert-body: #c9c4de;
+  --cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5.2 2.2v14.4l3.8-3.6 3.7 6.6 2.3-1.3-3.8-6.6h4.8z' fill='%23ffffff' stroke='%2310063F' stroke-width='1.35' stroke-linejoin='round'/%3E%3C/svg%3E")
+    5 2, pointer;
 }
 
 :root[data-theme="light"] {
-  --text-hi: var(--navy);
-  --btn-bg: var(--navy);
-  --invert-title: var(--navy);
-  --mission: var(--navy);
+  --bg: #f3f4fa;
+  --bg-raise: #ffffff;
+  --glass: rgba(243, 244, 250, 0.88);
+  --text-hi: var(--ink);
+  --text: #1c1538;
+  --text-body: #3a345c;
+  --text-dim: #514b72;
+  --line-1: rgba(16, 6, 63, 0.14);
+  --line-2: rgba(16, 6, 63, 0.07);
+  --btn-bg: var(--ink);
+  --btn-fg: #ffffff;
+  --on-accent: #ffffff;
+  --invert-bg: #e4e6f2;
+  --invert-title: var(--ink);
+  --invert-body: #3a345c;
+  --mission: var(--ink);
+  --cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5.2 2.2v14.4l3.8-3.6 3.7 6.6 2.3-1.3-3.8-6.6h4.8z' fill='%2310063F' stroke='%23ffffff' stroke-width='1.35' stroke-linejoin='round'/%3E%3C/svg%3E")
+    5 2, pointer;
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
-    --text-hi: var(--navy);
-    --btn-bg: var(--navy);
-    --invert-title: var(--navy);
-    --mission: var(--navy);
+    --bg: #f3f4fa;
+    --bg-raise: #ffffff;
+    --glass: rgba(243, 244, 250, 0.88);
+    --text-hi: var(--ink);
+    --text: #1c1538;
+    --text-body: #3a345c;
+    --text-dim: #514b72;
+    --line-1: rgba(16, 6, 63, 0.14);
+    --line-2: rgba(16, 6, 63, 0.07);
+    --btn-bg: var(--ink);
+    --btn-fg: #ffffff;
+    --on-accent: #ffffff;
+    --invert-bg: #e4e6f2;
+    --invert-title: var(--ink);
+    --invert-body: #3a345c;
+    --mission: var(--ink);
+    --cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5.2 2.2v14.4l3.8-3.6 3.7 6.6 2.3-1.3-3.8-6.6h4.8z' fill='%2310063F' stroke='%23ffffff' stroke-width='1.35' stroke-linejoin='round'/%3E%3C/svg%3E")
+      5 2, pointer;
   }
 }
 
@@ -730,8 +768,75 @@ html.nav-open body {
   display: none !important;
 }
 
+.submit-button {
+  border-color: var(--btn-bg);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .service-panel {
     transition: none;
+  }
+}
+
+html.js-reveal .reveal:not(.is-in) {
+  opacity: 0;
+  transform: translateY(32px);
+}
+
+html.js-reveal .reveal-row:not(.is-in) {
+  transform: translateY(18px);
+}
+
+html.js-reveal .reveal-soft:not(.is-in) {
+  transform: translateY(14px);
+}
+
+html.js-reveal .reveal.is-in {
+  animation: reveal-rise 0.9s var(--ease-out-quint) both;
+  animation-delay: var(--d, 0s);
+}
+
+html.js-reveal .reveal-row.is-in {
+  animation-name: reveal-row;
+  animation-duration: 0.74s;
+}
+
+html.js-reveal .reveal-soft.is-in {
+  animation-name: reveal-soft;
+  animation-duration: 0.68s;
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes reveal-row {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes reveal-soft {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

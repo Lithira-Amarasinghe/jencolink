@@ -204,7 +204,50 @@
   initHero(reducedMotion);
   initCatalog(reducedMotion);
   initSectionSpy();
+  initReveal(reducedMotion);
 })();
+
+function initReveal(reducedMotion) {
+  if (reducedMotion) {
+    document.documentElement.classList.remove("js-reveal");
+    return;
+  }
+  const groups = [
+    { selector: ".services-head", kind: "reveal" },
+    { selector: ".service-row-inner", kind: "reveal-row", stagger: 0.05 },
+    { selector: ".why-intro", kind: "reveal" },
+    { selector: ".value-item", kind: "reveal", stagger: 0.07 },
+    { selector: ".faq-head", kind: "reveal" },
+    { selector: ".faq-item", kind: "reveal-soft", stagger: 0.045 },
+    { selector: ".contact-copy", kind: "reveal" },
+    { selector: ".contact-section form", kind: "reveal", delay: 0.1 },
+    { selector: ".site-footer", kind: "reveal-soft" },
+  ];
+  const nodes = [];
+  for (const group of groups) {
+    document.querySelectorAll(group.selector).forEach((node, index) => {
+      node.classList.add("reveal", group.kind);
+      const delay = (group.delay || 0) + index * (group.stagger || 0);
+      if (delay) node.style.setProperty("--d", `${delay.toFixed(2)}s`);
+      nodes.push(node);
+    });
+  }
+  if (!nodes.length || !("IntersectionObserver" in window)) {
+    nodes.forEach((node) => node.classList.add("is-in"));
+    return;
+  }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add("is-in");
+        observer.unobserve(entry.target);
+      }
+    },
+    { rootMargin: "0px 0px -8% 0px", threshold: 0.12 },
+  );
+  nodes.forEach((node) => observer.observe(node));
+}
 
 function initSectionSpy() {
   const links = [...document.querySelectorAll(".desktop-nav [data-scroll], .mobile-nav [data-scroll]")];
