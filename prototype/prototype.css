@@ -1,38 +1,27 @@
 /* Rules that exist only so the static prototype can run the live layout.
    Visual language stays in styles.css, copied from the Website project. */
 
+.logo-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 .brand-logo {
-  display: none;
+  display: block;
   height: 40px;
   width: auto;
+  aspect-ratio: 346 / 320;
   flex: 0 0 auto;
+  color: var(--text-hi);
 }
 
 .brand--footer .brand-logo {
   height: 34px;
 }
 
-.brand-logo--for-dark {
-  display: block;
-}
-
-:root[data-theme="light"] .brand-logo--for-dark {
-  display: none;
-}
-
-:root[data-theme="light"] .brand-logo--for-light {
-  display: block;
-}
-
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme]) .brand-logo--for-dark {
-    display: none;
-  }
-
-  :root:not([data-theme]) .brand-logo--for-light {
-    display: block;
-  }
-
   :root:not([data-theme]) .theme-toggle-thumb {
     transform: translateX(26px);
   }
@@ -322,6 +311,7 @@ html.nav-open body {
   width: 100%;
   height: auto;
   flex: none;
+  color: var(--text-hi);
 }
 
 .hero-emblem-img {
