@@ -396,6 +396,34 @@ function initHero(reducedMotion) {
     applyLane(next);
   });
 
+  const mission = scene.querySelector(".hero-mission");
+  const words = [...scene.querySelectorAll(".mission-word")];
+  const paintWords = (index) => {
+    words.forEach((word, i) => {
+      const distance = index < 0 ? 99 : Math.abs(i - index);
+      const near = distance === 0 ? 1 : distance === 1 ? 0.42 : 0;
+      word.style.setProperty("--near", String(near));
+    });
+  };
+  const nearestWord = (event) => {
+    let best = -1;
+    let bestDistance = 120;
+    words.forEach((word, i) => {
+      const rect = word.getBoundingClientRect();
+      const distance = Math.hypot(
+        event.clientX - (rect.left + rect.width / 2),
+        event.clientY - (rect.top + rect.height / 2),
+      );
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = i;
+      }
+    });
+    paintWords(best);
+  };
+  mission?.addEventListener("pointermove", nearestWord);
+  mission?.addEventListener("pointerleave", () => paintWords(-1));
+
   scene.addEventListener("pointerdown", (event) => {
     if (event.pointerType === "touch") hint?.classList.add("is-gone");
   });

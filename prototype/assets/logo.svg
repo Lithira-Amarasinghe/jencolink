@@ -3,7 +3,7 @@
   <style>
     svg { color: #ffffff; }
     @media (prefers-color-scheme: light) {
-      svg { color: #0b1330; }
+      svg { color: #150571; }
     }
   </style>
   <g id="mark" transform="translate(0 320) scale(1 -1)">
