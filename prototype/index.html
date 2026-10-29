@@ -116,51 +116,53 @@
 
     <main id="top">
       <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-dots" aria-hidden="true"></div>
-        <canvas class="hero-canvas" aria-hidden="true"></canvas>
-        <img class="hero-mark brand-logo--for-dark" src="assets/logo-for-dark.png" alt="" width="346" height="320" />
-        <img class="hero-mark brand-logo--for-light" src="assets/logo-for-light.png" alt="" width="347" height="320" />
-        <div class="hero-stage">
-          <div class="hero-lanes" role="radiogroup" aria-label="Focus the field">
-            <button
-              type="button"
-              role="radio"
-              aria-checked="false"
-              data-lane="web"
-              data-copy="Websites, portals, and custom web applications, built to stay maintainable."
-            >
-              Web Apps
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked="false"
-              data-lane="cloud"
-              data-copy="Systems engineered to stay reliable as the business grows."
-            >
-              Cloud Solutions
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked="false"
-              data-lane="flow"
-              data-copy="Workflows that remove the manual steps from daily operations."
-            >
-              Digital Automations
-            </button>
-          </div>
-          <div class="hero-type">
-            <div class="hero-block hero-block--brand" aria-label="Jencolink">
-              <div class="hero-layer hero-layer--base" aria-hidden="true"><span class="hero-wordmark-char" style="--c: 0"><span class="hero-char-body">J</span></span><span class="hero-wordmark-char" style="--c: 1"><span class="hero-char-body">E</span></span><span class="hero-wordmark-char" style="--c: 2"><span class="hero-char-body">N</span></span><span class="hero-wordmark-char" style="--c: 3"><span class="hero-char-body">C</span></span><span class="hero-wordmark-char" style="--c: 4"><span class="hero-char-body">O</span></span><span class="hero-wordmark-char" style="--c: 5"><span class="hero-char-body">L</span></span><span class="hero-wordmark-char" style="--c: 6"><span class="hero-char-body">I</span></span><span class="hero-wordmark-char" style="--c: 7"><span class="hero-char-body">N</span></span><span class="hero-wordmark-char" style="--c: 8"><span class="hero-char-body">K</span></span></div>
-              <div class="hero-layer hero-layer--glitch" aria-hidden="true">JENCOLINK</div>
+        <div class="hero-split">
+          <div class="hero-copy">
+            <h1 id="hero-title" class="hero-word">Jencolink</h1>
+            <p class="hero-mission">A better and more joyous future through the power of computing.</p>
+            <div class="hero-tags" role="radiogroup" aria-label="Practices">
+              <button
+                type="button"
+                role="radio"
+                aria-checked="false"
+                data-lane="web"
+                data-copy="Websites, portals, and custom web applications, built to stay maintainable."
+                style="--i: 0"
+              >
+                Web Apps
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked="false"
+                data-lane="cloud"
+                data-copy="Systems engineered to stay reliable as the business grows."
+                style="--i: 1"
+              >
+                Cloud Solutions
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked="false"
+                data-lane="flow"
+                data-copy="Workflows that remove the manual steps from daily operations."
+                style="--i: 2"
+              >
+                Digital Automations
+              </button>
             </div>
-            <h1 id="hero-title" class="hero-block hero-block--vision">
-              <span class="hero-layer hero-layer--base">A better and more joyous future through the power of computing</span>
-              <span class="hero-layer hero-layer--glitch" aria-hidden="true">A better and more joyous future through the power of computing</span>
-            </h1>
-            <p class="hero-signal" id="hero-signal" aria-live="polite">Choose a practice, or move through the field.</p>
-            <p class="hero-meter" aria-hidden="true"><span id="hero-meter-count">0</span> links in reach</p>
+            <div class="hero-note-wrap" data-open="false">
+              <p class="hero-note" id="hero-signal" aria-live="polite"></p>
+            </div>
+          </div>
+          <div class="hero-emblem" aria-hidden="true">
+            <div class="hero-emblem-in">
+              <div class="hero-emblem-shift">
+                <img class="hero-emblem-img brand-logo brand-logo--for-dark" src="assets/logo-for-dark.png" alt="" width="346" height="320" />
+                <img class="hero-emblem-img brand-logo brand-logo--for-light" src="assets/logo-for-light.png" alt="" width="347" height="320" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
