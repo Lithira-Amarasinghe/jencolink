@@ -10,7 +10,14 @@
 
 :root {
   --navy: #150571;
+  --amethyst: #130947;
   --mission: #eef3fb;
+  --bg: var(--amethyst);
+  --bg-raise: #1c105c;
+  --glass: rgba(19, 9, 71, 0.78);
+  --on-accent: var(--amethyst);
+  --btn-fg: var(--amethyst);
+  --invert-bg: #1c105c;
 }
 
 :root[data-theme="light"] {
@@ -27,18 +34,6 @@
     --invert-title: var(--navy);
     --mission: var(--navy);
   }
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 .brand-logo {
@@ -194,7 +189,72 @@ html.nav-open body {
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
-  transform: translate3d(calc(var(--sx, 0) * 10px), calc(var(--sy, 0) * 6px), 0);
+}
+
+.hero-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-aurora-wash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 52vmax;
+  height: 52vmax;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent) 30%, transparent) 0%,
+    transparent 68%
+  );
+  transform: translate3d(-40vw, -20vh, 0);
+  will-change: transform;
+}
+
+.hero-aurora-wash[data-wash="0"] {
+  width: 60vmax;
+  height: 60vmax;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent-2) 26%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+.hero-aurora-wash[data-wash="2"] {
+  width: 44vmax;
+  height: 44vmax;
+  opacity: 0.8;
+}
+
+.hero-aurora-wash--follow {
+  width: 38vmax;
+  height: 38vmax;
+  opacity: 0;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent) 38%, transparent) 0%,
+    transparent 64%
+  );
+  transition: opacity 700ms var(--ease-out);
+}
+
+.hero-aurora[data-lit="true"] .hero-aurora-wash--follow {
+  opacity: 0.9;
+}
+
+:root[data-theme="light"] .hero-aurora-wash:not(.hero-aurora-wash--follow) {
+  opacity: 0.55;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .hero-aurora-wash:not(.hero-aurora-wash--follow) {
+    opacity: 0.55;
+  }
 }
 
 .hero-word {
@@ -325,25 +385,19 @@ html.nav-open body {
   justify-content: flex-start;
   order: -1;
   min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
 }
 
-.hero-emblem::before {
-  content: "";
-  position: absolute;
-  left: 8%;
-  top: 50%;
-  width: min(92%, 520px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 24%, transparent), transparent 68%);
-  transform: translate3d(calc(var(--sx, 0) * 22px), calc(-50% + var(--sy, 0) * 16px), 0);
-  opacity: 0.7;
-  pointer-events: none;
-  transition: opacity 480ms var(--ease-out);
-}
-
-.hero[data-linked="true"] .hero-emblem::before {
-  opacity: 1;
+.hero-emblem-in,
+.hero-emblem-shift {
+  display: block;
 }
 
 .hero-emblem-in {
@@ -352,7 +406,8 @@ html.nav-open body {
 }
 
 .hero-emblem-shift {
-  transform: translate3d(calc(var(--sx, 0) * -20px), calc(var(--sy, 0) * -14px), 0);
+  transform: rotate(var(--mark-turn, 0deg));
+  transform-origin: 50% 46%;
 }
 
 .hero-emblem .brand-logo {
@@ -473,14 +528,12 @@ html.nav-open body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-copy,
-  .hero-emblem-shift,
-  .hero-emblem::before {
-    transform: none;
+  .hero-aurora-wash--follow {
+    display: none;
   }
 
-  .hero-emblem::before {
-    transform: translateY(-50%);
+  .hero-emblem-shift {
+    transform: rotate(var(--mark-turn, 0deg));
   }
 
   .hero-letter,

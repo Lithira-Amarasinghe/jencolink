@@ -89,6 +89,14 @@
     button.addEventListener("click", () => scrollToId(button.getAttribute("data-scroll")));
   });
 
+  document.querySelectorAll('a.brand[href="#top"]').forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      setMenu(false);
+      window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+    });
+  });
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") setMenu(false);
   });
@@ -343,8 +351,13 @@ function initHero(reducedMotion) {
   const more = scene.querySelector(".hero-more");
   const hint = scene.querySelector(".hero-drag-hint");
   const buttons = [...scene.querySelectorAll(".hero-tags button")];
+  const emblem = scene.querySelector(".hero-emblem");
   let lane = null;
   let clearTimer = 0;
+  let turnTarget = 0;
+  let dragTilt = 0;
+  let dragged = false;
+  let pointerOrigin = null;
 
   const applyLane = (button, source) => {
     lane = button ? button.dataset.lane : null;
@@ -365,6 +378,8 @@ function initHero(reducedMotion) {
         }, 420);
       }
     }
+    turnTarget = lane === "web" ? -8 : lane === "flow" ? 8 : 0;
+    if (reducedMotion) scene.style.setProperty("--mark-turn", `${turnTarget}deg`);
     if (source !== "catalog") {
       document.dispatchEvent(
         new CustomEvent("jencolink:lane", {
@@ -426,17 +441,86 @@ function initHero(reducedMotion) {
 
   scene.addEventListener("pointerdown", (event) => {
     if (event.pointerType === "touch") hint?.classList.add("is-gone");
+    if (event.target.closest(".hero-emblem")) dragged = false;
   });
 
-  if (reducedMotion) return;
+  emblem?.addEventListener("pointerdown", (event) => {
+    dragged = false;
+    pointerOrigin = { x: event.clientX, y: event.clientY };
+  });
+
+  emblem?.addEventListener("pointermove", (event) => {
+    if (!pointerOrigin || event.buttons === 0) return;
+    const travel = Math.hypot(event.clientX - pointerOrigin.x, event.clientY - pointerOrigin.y);
+    if (travel > 12) {
+      dragged = true;
+      dragTilt = Math.max(-12, Math.min(12, (event.clientX - pointerOrigin.x) / 18));
+    }
+  });
+
+  emblem?.addEventListener("pointerup", () => {
+    pointerOrigin = null;
+    dragTilt = 0;
+  });
+  emblem?.addEventListener("pointercancel", () => {
+    pointerOrigin = null;
+    dragTilt = 0;
+  });
+
+  emblem?.addEventListener("click", () => {
+    if (dragged || reducedMotion) {
+      dragged = false;
+      return;
+    }
+    scene.querySelectorAll(".hero-letter, .mission-word, .hero-tags button, .hero-emblem-in").forEach((node) => {
+      node.style.animation = "none";
+      void node.offsetWidth;
+      node.style.animation = "";
+    });
+  });
+
+  const aurora = scene.querySelector(".hero-aurora");
+  const washes = [
+    { el: scene.querySelector('[data-wash="0"]'), x: 0.2, y: 0.34, ampX: 0.05, ampY: 0.034, phase: 0 },
+    { el: scene.querySelector('[data-wash="1"]'), x: 0.78, y: 0.26, ampX: 0.042, ampY: 0.04, phase: 2.1 },
+    { el: scene.querySelector('[data-wash="2"]'), x: 0.54, y: 0.82, ampX: 0.036, ampY: 0.044, phase: 4.3 },
+  ].filter((wash) => wash.el);
+  const follow = scene.querySelector('[data-wash="follow"]');
+
+  const placeWashes = (time, biasX, biasY) => {
+    const width = scene.clientWidth;
+    const height = scene.clientHeight;
+    for (const wash of washes) {
+      const driftX = time == null ? 0 : Math.sin(time * 0.22 + wash.phase) * wash.ampX;
+      const driftY = time == null ? 0 : Math.cos(time * 0.18 + wash.phase) * wash.ampY;
+      const cx = (wash.x + driftX + biasX) * width;
+      const cy = (wash.y + driftY + biasY) * height;
+      wash.el.style.transform = `translate3d(${cx.toFixed(1)}px, ${cy.toFixed(1)}px, 0) translate(-50%, -50%)`;
+    }
+  };
+
+  if (reducedMotion) {
+    placeWashes(null, 0, 0);
+    return;
+  }
 
   let heroVisible = true;
-  let tx = 0;
-  let ty = 0;
-  let x = 0;
-  let y = 0;
-  let inside = false;
+  let turn = 0;
+  let gx = 0.46;
+  let gy = 0.4;
+  let gxT = 0.46;
+  let gyT = 0.4;
   let raf = 0;
+  let wandering = false;
+  let wanderX = gx;
+  let wanderY = gy;
+  let autoVX = 0;
+  let autoVY = 0;
+  let kickIn = 400 + Math.random() * 700;
+  let lastFrame = performance.now();
+  const coarsePointer = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+  const idleResumeMs = coarsePointer ? 700 : 2000;
+  let lastRealMoveAt = performance.now();
 
   const observer = new IntersectionObserver(
     ([entry]) => {
@@ -447,25 +531,92 @@ function initHero(reducedMotion) {
   );
   observer.observe(scene);
 
-  scene.addEventListener("pointermove", (event) => {
+  const notePointer = (event) => {
+    if (event.pointerType === "mouse" && event.movementX === 0 && event.movementY === 0) return;
     const rect = scene.getBoundingClientRect();
-    const gain = event.pointerType === "touch" ? 1.65 : 1;
-    tx = Math.max(-0.5, Math.min(0.5, ((event.clientX - rect.left) / rect.width - 0.5) * gain));
-    ty = Math.max(-0.5, Math.min(0.5, ((event.clientY - rect.top) / rect.height - 0.5) * gain));
-    inside = true;
-  });
-  scene.addEventListener("pointerleave", () => {
-    inside = false;
-    tx = 0;
-    ty = 0;
-  });
+    if (rect.width === 0 || rect.height === 0) return;
+    lastRealMoveAt = performance.now();
+    wandering = false;
+    gxT = Math.min(0.9, Math.max(0.1, (event.clientX - rect.left) / rect.width));
+    gyT = Math.min(0.88, Math.max(0.12, (event.clientY - rect.top) / rect.height));
+    aurora?.setAttribute("data-lit", "true");
+  };
+  scene.addEventListener("pointermove", notePointer);
+  scene.addEventListener("pointerdown", notePointer);
+
+  const stepWander = (dt) => {
+    const step = Math.min(dt, 34) / 16.67;
+    kickIn -= dt;
+    if (kickIn <= 0) {
+      const angle = Math.random() * Math.PI * 2;
+      const power = 0.004 + Math.random() * 0.008;
+      autoVX += Math.cos(angle) * power;
+      autoVY += Math.sin(angle) * power;
+      kickIn = 520 + Math.random() * 1800;
+    }
+    autoVX += (Math.random() - 0.5) * 0.0014 * step;
+    autoVY += (Math.random() - 0.5) * 0.0014 * step;
+    autoVX *= 0.985 ** step;
+    autoVY *= 0.985 ** step;
+    const speed = Math.hypot(autoVX, autoVY);
+    const maxSpeed = 0.006;
+    if (speed > maxSpeed) {
+      autoVX = (autoVX / speed) * maxSpeed;
+      autoVY = (autoVY / speed) * maxSpeed;
+    }
+    wanderX += autoVX * step;
+    wanderY += autoVY * step;
+    if (wanderX < 0.12) {
+      wanderX = 0.12;
+      autoVX = Math.abs(autoVX) * 0.5;
+    } else if (wanderX > 0.88) {
+      wanderX = 0.88;
+      autoVX = -Math.abs(autoVX) * 0.5;
+    }
+    if (wanderY < 0.14) {
+      wanderY = 0.14;
+      autoVY = Math.abs(autoVY) * 0.5;
+    } else if (wanderY > 0.86) {
+      wanderY = 0.86;
+      autoVY = -Math.abs(autoVY) * 0.5;
+    }
+  };
 
   const loop = () => {
     if (heroVisible) {
-      x += ((inside ? tx : 0) - x) * 0.07;
-      y += ((inside ? ty : 0) - y) * 0.07;
-      scene.style.setProperty("--sx", x.toFixed(4));
-      scene.style.setProperty("--sy", y.toFixed(4));
+      const now = performance.now();
+      const dt = now - lastFrame;
+      lastFrame = now;
+      const idle = now - lastRealMoveAt > idleResumeMs;
+      if (idle) {
+        if (!wandering) {
+          wandering = true;
+          wanderX = gx;
+          wanderY = gy;
+          const angle = Math.random() * Math.PI * 2;
+          const power = 0.003 + Math.random() * 0.004;
+          autoVX = Math.cos(angle) * power;
+          autoVY = Math.sin(angle) * power;
+          kickIn = 180 + Math.random() * 500;
+        }
+        stepWander(dt);
+        gxT = wanderX;
+        gyT = wanderY;
+        aurora?.setAttribute("data-lit", "true");
+      }
+      const ease = idle ? 0.04 : 0.08;
+      gx += (gxT - gx) * ease;
+      gy += (gyT - gy) * ease;
+      const biasX = (gx - 0.5) * 0.22;
+      const biasY = (gy - 0.42) * 0.18;
+      placeWashes(now / 1000, biasX, biasY);
+      if (follow) {
+        const fx = gx * scene.clientWidth;
+        const fy = gy * scene.clientHeight;
+        follow.style.transform = `translate3d(${fx.toFixed(1)}px, ${fy.toFixed(1)}px, 0) translate(-50%, -50%)`;
+      }
+      turn += (turnTarget + dragTilt - turn) * 0.08;
+      scene.style.setProperty("--mark-turn", `${turn.toFixed(2)}deg`);
     }
     raf = requestAnimationFrame(loop);
   };

@@ -11,7 +11,7 @@
       name="description"
       content="Jencolink designs, builds, and scales intelligent software: custom web applications, business management systems, eCommerce, and automation — engineered with care."
     />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#05091c" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#130947" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f8fd" />
     <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
@@ -114,11 +114,16 @@
 
     <main id="top">
       <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-aurora" aria-hidden="true">
+          <span class="hero-aurora-wash" data-wash="0"></span>
+          <span class="hero-aurora-wash" data-wash="1"></span>
+          <span class="hero-aurora-wash" data-wash="2"></span>
+          <span class="hero-aurora-wash hero-aurora-wash--follow" data-wash="follow"></span>
+        </div>
         <div class="hero-split">
           <div class="hero-copy">
-            <h1 id="hero-title" class="hero-word">
+            <h1 id="hero-title" class="hero-word" aria-label="Jencolink">
               <span class="hero-letters" aria-hidden="true"><span class="hero-letter" style="--i: 0">J</span><span class="hero-letter" style="--i: 1">e</span><span class="hero-letter" style="--i: 2">n</span><span class="hero-letter" style="--i: 3">c</span><span class="hero-letter" style="--i: 4">o</span><span class="hero-letter" style="--i: 5">l</span><span class="hero-letter" style="--i: 6">i</span><span class="hero-letter" style="--i: 7">n</span><span class="hero-letter" style="--i: 8">k</span></span>
-              <span class="sr-only">Jencolink</span>
             </h1>
             <p class="hero-mission">
               <span class="mission-word" style="--i: 0">A</span>
@@ -170,16 +175,16 @@
             </div>
             <button type="button" class="hero-more" data-scroll="services" hidden>See these services</button>
           </div>
-          <div class="hero-emblem" aria-hidden="true">
-            <div class="hero-emblem-in">
-              <div class="hero-emblem-shift">
+          <button type="button" class="hero-emblem" aria-label="Play the Jencolink mark again">
+            <span class="hero-emblem-in">
+              <span class="hero-emblem-shift">
                 <svg class="hero-emblem-img brand-logo" viewBox="0 0 346 320" aria-hidden="true">
                   <use href="#logo" />
                 </svg>
-              </div>
-            </div>
-            <p class="hero-drag-hint">Drag to tilt</p>
-          </div>
+              </span>
+            </span>
+            <span class="hero-drag-hint">Drag to tilt</span>
+          </button>
         </div>
       </section>
 
