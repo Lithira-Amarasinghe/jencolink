@@ -8,230 +8,372 @@
   min-height: 100svh;
   background: var(--bg);
   isolation: isolate;
-  /* .hero-dots deliberately bleeds -40px past its own edges for full-bleed
-     texture coverage; without clipping it here that bleed pushes real
-     scroll onto the page (confirmed: scrollTo(500,0) actually moved
-     scrollX, even with body{overflow-x:hidden} — html was the true
-     scrolling box). Canvas is position:fixed, unaffected by this clip.
-     Both axes must be set together: per spec, setting only overflow-x
-     forces overflow-y to compute as auto, which is exactly what was
-     spawning a second, section-local scrollbar here. */
   overflow: hidden;
 }
 
-/* ============ HALFTONE DOT FIELD (paper texture) ============ */
-/* Two offset dot layers drift at different speeds/directions — a slow,
-   always-on ambient float so the field reads as alive in both themes
-   (var(--text-dim) carries enough contrast at low opacity to stay visible
-   on both the dark and light schemes, unlike the near-invisible --line-1). */
+.hero-split {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  align-items: center;
+  column-gap: clamp(16px, 3.2vw, 72px);
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(96px, 14vh, 156px) clamp(18px, 4.5vw, 96px) clamp(40px, 7vh, 96px);
+}
 
-.hero-dots {
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.hero-aurora {
   position: absolute;
-  inset: -40px;
-  z-index: -2;
-  background-image: radial-gradient(var(--text-dim) 1.4px, transparent 1.6px);
-  background-size: 26px 26px;
-  opacity: 0.34;
-  animation: hero-dots-drift 34s linear infinite;
-  /* A vertical-only fade (full width, dissolving only near the very top and
-     the section hand-off at the bottom) rather than an elliptical mask —
-     an ellipse's radii scale with the box's aspect ratio, so on a narrow,
-     tall phone viewport it was fading the dots out well before the screen
-     edges. This keeps the field visible edge-to-edge at every width. */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 10%, #000 78%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 10%, #000 78%, transparent 100%);
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
   pointer-events: none;
 }
 
-.hero-dots::after {
-  content: "";
+.hero-aurora-wash {
   position: absolute;
-  inset: 0;
-  background-image: radial-gradient(var(--accent) 1px, transparent 1.4px);
-  background-size: 26px 26px;
-  background-position: 13px 13px;
-  opacity: 0.5;
-  animation: hero-dots-drift-reverse 46s linear infinite;
+  top: 0;
+  left: 0;
+  width: 52vmax;
+  height: 52vmax;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent) 30%, transparent) 0%,
+    transparent 68%
+  );
+  transform: translate3d(-40vw, -20vh, 0);
+  will-change: transform;
 }
 
-@keyframes hero-dots-drift {
-  from { background-position: 0 0; }
-  to { background-position: -260px 130px; }
+.hero-aurora-wash[data-wash='0'] {
+  width: 60vmax;
+  height: 60vmax;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent-2) 26%, transparent) 0%,
+    transparent 70%
+  );
 }
 
-@keyframes hero-dots-drift-reverse {
-  from { background-position: 13px 13px; }
-  to { background-position: 273px -117px; }
+.hero-aurora-wash[data-wash='2'] {
+  width: 44vmax;
+  height: 44vmax;
+  opacity: 0.8;
 }
 
-/* Paused via IntersectionObserver (hero.component.ts) once the section is
-   scrolled out of view — background-position animations paint, they don't
-   composite, so this stops real main-thread cost from accumulating behind
-   the fold for the rest of the page's scroll. */
-.hero--offscreen .hero-dots,
-.hero--offscreen .hero-dots::after {
-  animation-play-state: paused;
+.hero-aurora-wash--follow {
+  width: 38vmax;
+  height: 38vmax;
+  opacity: 0;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent) 38%, transparent) 0%,
+    transparent 64%
+  );
+  transition: opacity 700ms var(--ease-out);
 }
 
-/* Same reasoning for the letters' infinite glow pulse — text-shadow is
-   also a paint, not a composite. */
-.hero--offscreen .hero-wordmark-char {
-  animation-play-state: paused;
+.hero-aurora[data-lit='true'] .hero-aurora-wash--follow {
+  opacity: 0.9;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-dots,
-  .hero-dots::after {
-    animation: none;
-  }
-}
-
-/* Ambient canvas kept far back and subtle */
-.hero-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: -3;
-  display: block;
-  width: 100%;
-  height: 100%;
+:host-context([data-theme='light']) .hero-aurora-wash:not(.hero-aurora-wash--follow) {
   opacity: 0.55;
 }
 
-/* ============ STAGE ============ */
-
-.hero-stage {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(20px, 3.5vh, 44px);
-  min-height: 100vh;
-  min-height: 100svh;
-  padding: clamp(96px, 14vh, 160px) clamp(16px, 4vw, 64px) clamp(28px, 4vh, 48px);
+@media (prefers-color-scheme: light) {
+  :host-context(html:not([data-theme])) .hero-aurora-wash:not(.hero-aurora-wash--follow) {
+    opacity: 0.55;
+  }
 }
 
-/* ============ CAPABILITY STRIP (awards-line slot) ============ */
+.hero-word {
+  position: relative;
+  margin: 0;
+  max-width: 100%;
+  font-family: var(--font-display);
+  font-weight: 750;
+  font-stretch: 112%;
+  font-size: clamp(1.7rem, 16.5cqi, 6rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--text-hi);
+  white-space: nowrap;
+}
 
-.hero-strip {
+.hero-letters {
+  display: inline-flex;
+}
+
+.hero-letter {
+  display: inline-block;
+}
+
+.hero-mission {
+  margin: clamp(18px, 2.4vh, 28px) 0 0;
+  max-width: 16ch;
+  font-family: var(--font-display);
+  font-weight: 580;
+  font-stretch: 104%;
+  font-size: clamp(1.02rem, 8.2cqi, 2.45rem);
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: var(--mission);
+  text-wrap: balance;
+}
+
+.mission-word {
+  display: inline-block;
+  color: color-mix(in srgb, var(--accent) calc(var(--near, 0) * 72%), var(--mission));
+  transform: translateY(calc(var(--near, 0) * -0.08em));
+  transition:
+    color 160ms linear,
+    transform 280ms var(--ease-out);
+  cursor: default;
+}
+
+.hero-tags {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  row-gap: 6px;
-  gap: 14px;
-  margin: 0;
+  gap: 8px 26px;
+  margin: clamp(28px, 4vh, 40px) 0 0;
+}
+
+.hero-tags button {
+  position: relative;
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 4px 0 8px;
   font-family: var(--font-mono);
-  font-size: clamp(11px, 1.05vw, 14px);
+  font-size: clamp(12px, 1.15vw, 13px);
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-body);
-  animation: hero-rise 0.7s var(--ease-out) 0.2s both;
+  transition: color 220ms var(--ease-out);
 }
 
-.hero-strip i {
-  font-style: normal;
-  color: var(--accent);
-}
-
-/* ============ GIANT STATEMENT TYPE ============ */
-
-.hero-type {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(14px, 2.4vh, 30px);
-  width: 100%;
-}
-
-.hero-block {
-  position: relative;
-  margin: 0;
-  text-align: center;
-}
-
-/* Base + glitch layers share metrics exactly so glyphs register */
-.hero-block--brand .hero-layer {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-stretch: 116%;
-  font-size: min(11.4vw, 168px);
-  line-height: 0.85;
-  letter-spacing: -0.015em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.hero-block--vision .hero-layer {
-  display: block;
-  max-width: 18ch;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-stretch: 110%;
-  font-size: clamp(1.9rem, 5.2vw, 4.4rem);
-  line-height: 1.04;
-  letter-spacing: -0.03em;
-  text-wrap: balance;
-}
-
-.hero-layer--base {
-  color: var(--text-hi);
-  pointer-events: none;
-}
-
-.hero-block--brand .hero-layer--base {
-  color: var(--accent);
-}
-
-/* Cursor-reveal glow — visible only through a spotlight that follows the
-   pointer. Both offset shadows use the theme's own accent pair, so the
-   glow always reads as "this site's colour", light or dark, never a
-   fixed hue that clashes with the active scheme. */
-.hero-layer--glitch {
+.hero-tags button::after {
+  content: '';
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 320ms var(--ease-out);
+}
+
+.hero-tags button:hover,
+.hero-tags button:focus-visible {
   color: var(--text-hi);
-  text-shadow:
-    -0.03em 0.016em 8px var(--accent),
-    0.03em -0.016em 8px var(--accent-2),
-    0 0 30px var(--glow);
-  pointer-events: none;
-  -webkit-mask-image: radial-gradient(
-    circle 170px at var(--bx, -999px) var(--by, -999px),
-    #000 0%,
-    #000 30%,
-    transparent 70%
-  );
-  mask-image: radial-gradient(
-    circle 170px at var(--bx, -999px) var(--by, -999px),
-    #000 0%,
-    #000 30%,
-    transparent 70%
-  );
 }
 
-/* Brand letters assemble on load, then glow-breathe forever */
-.hero-wordmark-char {
-  display: inline-block;
-  transform-origin: center bottom;
-  animation-name: hero-char-in, hero-char-glow;
-  animation-duration: 0.9s, 3.6s;
-  animation-timing-function: var(--ease-out-quint), ease-in-out;
-  animation-iteration-count: 1, infinite;
-  animation-fill-mode: both, none;
-  animation-delay: calc(0.1s + var(--c, 0) * 0.05s), calc(1.4s + var(--c, 0) * 0.12s);
+.hero-tags button[aria-checked='true'] {
+  color: var(--accent);
 }
 
-@keyframes hero-char-in {
+.hero-tags button[aria-checked='true']::after {
+  transform: scaleX(1);
+}
+
+.hero-note-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  width: min(42ch, 100%);
+  transition: grid-template-rows 420ms var(--ease-out);
+}
+
+.hero-note-wrap[data-open='true'] {
+  grid-template-rows: 1fr;
+  margin-top: 18px;
+}
+
+.hero-note {
+  overflow: hidden;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-body);
+  text-wrap: pretty;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 320ms var(--ease-out),
+    transform 420ms var(--ease-out);
+}
+
+.hero-note-wrap[data-open='true'] .hero-note {
+  opacity: 1;
+  transform: none;
+}
+
+.hero-emblem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  order: -1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+}
+
+.hero-emblem-in,
+.hero-emblem-shift {
+  display: block;
+}
+
+.hero-emblem-in {
+  position: relative;
+  width: min(100%, clamp(148px, 30vw, 460px));
+}
+
+.hero-emblem-shift {
+  transform: rotate(var(--mark-turn, 0deg));
+  transform-origin: 50% 46%;
+}
+
+.hero-more {
+  margin-top: 22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hero-more[hidden] {
+  display: none !important;
+}
+
+.hero-drag-hint {
+  display: none;
+  margin: 16px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.hero-drag-hint.is-gone {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .hero-split {
+    grid-template-columns: 1fr;
+    align-items: start;
+    align-content: start;
+    row-gap: clamp(22px, 4vh, 40px);
+    padding-top: clamp(88px, 12vh, 112px);
+  }
+
+  .hero-emblem {
+    justify-self: center;
+    justify-content: center;
+    width: min(58vw, 220px);
+  }
+
+  .hero-emblem-in {
+    width: 100%;
+  }
+
+  .hero-copy {
+    align-items: center;
+    width: 100%;
+    text-align: center;
+  }
+
+  .hero-word {
+    font-size: clamp(2.35rem, 12vw, 4.4rem);
+  }
+
+  .hero-mission {
+    max-width: 18ch;
+    font-size: clamp(1.25rem, 5.4vw, 2.15rem);
+  }
+
+  .hero-tags {
+    justify-content: center;
+    gap: 6px 18px;
+  }
+
+  .hero-tags button {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+  }
+
+  .hero-note-wrap,
+  .hero-more {
+    margin-inline: auto;
+  }
+
+  .hero-drag-hint {
+    width: 100%;
+    margin-top: 12px;
+    text-align: center;
+    letter-spacing: 0.1em;
+  }
+}
+
+@media (pointer: coarse), (hover: none) {
+  .hero-emblem {
+    flex-direction: column;
+  }
+
+  .hero-drag-hint {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-letter {
+    animation: hero-letter-in 0.72s var(--ease-out) calc(var(--i, 0) * 0.055s) both;
+  }
+
+  .mission-word {
+    animation: mission-word-in 0.62s var(--ease-out) calc(0.62s + var(--i, 0) * 0.09s) both;
+  }
+
+  .hero-tags button {
+    animation: hero-tag-in 0.6s var(--ease-out) calc(1.35s + var(--i, 0) * 0.07s) both;
+  }
+
+  .hero-emblem-in {
+    animation: hero-mark-in 1.05s var(--ease-out) 0.22s both;
+  }
+}
+
+@keyframes hero-letter-in {
   from {
     opacity: 0;
-    transform: translateY(115%) rotateX(-70deg);
-    filter: blur(10px);
+    transform: translateY(0.42em);
+    filter: blur(8px);
   }
   to {
     opacity: 1;
@@ -240,28 +382,21 @@
   }
 }
 
-@keyframes hero-char-glow {
-  0%,
-  100% {
-    text-shadow: 0 0 40px var(--glow);
+@keyframes mission-word-in {
+  from {
+    clip-path: inset(0 100% -0.12em 0);
+    opacity: 0;
   }
-  50% {
-    text-shadow:
-      0 0 24px var(--glow),
-      0 0 90px var(--glow);
+  to {
+    clip-path: inset(0 0 -0.12em 0);
+    opacity: 1;
   }
 }
 
-.hero-block--vision .hero-layer--base {
-  opacity: 0;
-  transform: translateY(24px);
-  animation: hero-rise 0.8s var(--ease-out) 0.9s both;
-}
-
-@keyframes hero-rise {
+@keyframes hero-tag-in {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -269,63 +404,34 @@
   }
 }
 
-/* Touch devices have no hover, and even desktop users won't discover a
-   hover-only reveal without a hint — both are solved in hero.component.ts
-   by a JS "phantom cursor" that drives the SAME --bx/--by mask coordinates
-   a real pointer would, wandering the hero on an organic random walk (not
-   a fixed mechanical sweep) until a real mouse takes over. No separate CSS
-   sweep needed here as a result. See updateAutoPilot() in the component. */
-
-/* ============ RESPONSIVE ============ */
-
-@media (max-width: 640px) {
-  .hero-stage {
-    padding: clamp(88px, 13vh, 120px) clamp(16px, 5vw, 32px) clamp(24px, 4vh, 40px);
-    gap: clamp(18px, 3vh, 28px);
+@keyframes hero-mark-in {
+  from {
+    opacity: 0;
+    transform: translate3d(-48px, 0, 0);
   }
-  .hero-strip {
-    font-size: 10px;
-    gap: 8px;
-    letter-spacing: 0.1em;
-  }
-  .hero-block--brand .hero-layer {
-    font-size: 12.6vw;
-    letter-spacing: -0.02em;
-  }
-  .hero-block--vision .hero-layer {
-    font-size: clamp(1.4rem, 6.8vw, 2rem);
-  }
-}
-
-@media (max-height: 640px) {
-  .hero-stage {
-    gap: 14px;
-  }
-  .hero-block--brand .hero-layer {
-    font-size: min(10vw, 84px);
-  }
-  .hero-block--vision .hero-layer {
-    font-size: clamp(1.2rem, 4.6vh, 1.8rem);
-  }
-}
-
-/* ============ REDUCED MOTION ============ */
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-wordmark-char,
-  .hero-layer--glitch,
-  .hero-strip,
-  .hero-block--vision .hero-layer--base {
-    animation: none;
-  }
-  .hero-strip,
-  .hero-block--vision .hero-layer--base {
+  to {
     opacity: 1;
     transform: none;
   }
-  .hero-layer--glitch {
-    -webkit-mask-image: none;
-    mask-image: none;
-    opacity: 0.12;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-aurora-wash--follow {
+    display: none;
+  }
+
+  .hero-letter,
+  .mission-word,
+  .hero-tags button,
+  .hero-emblem-in {
+    animation: none;
+  }
+
+  .hero-letter,
+  .mission-word {
+    opacity: 1;
+    filter: none;
+    clip-path: none;
+    transform: none;
   }
 }
