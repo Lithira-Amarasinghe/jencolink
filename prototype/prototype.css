@@ -466,13 +466,19 @@ html.nav-open body {
   }
 
   .hero-emblem {
-    justify-self: start;
-    justify-content: flex-start;
+    justify-self: center;
+    justify-content: center;
     width: min(58vw, 220px);
   }
 
   .hero-emblem-in {
     width: 100%;
+  }
+
+  .hero-copy {
+    align-items: center;
+    width: 100%;
+    text-align: center;
   }
 
   .hero-word {
@@ -485,6 +491,7 @@ html.nav-open body {
   }
 
   .hero-tags {
+    justify-content: center;
     gap: 6px 18px;
   }
 
@@ -493,8 +500,15 @@ html.nav-open body {
     letter-spacing: 0.1em;
   }
 
+  .hero-note-wrap,
+  .hero-more {
+    margin-inline: auto;
+  }
+
   .hero-drag-hint {
+    width: 100%;
     margin-top: 12px;
+    text-align: center;
     letter-spacing: 0.1em;
   }
 }
