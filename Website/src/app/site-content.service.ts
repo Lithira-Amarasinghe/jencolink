@@ -320,10 +320,10 @@ const defaultContent: SiteContent = {
     },
   ],
   whySection: {
-    eyebrow: 'Why Choose Gencolink',
+    eyebrow: 'Why Choose Jencolink',
     heading: 'A reliable partner for building modern software',
     description:
-      'At Gencolink, we believe successful software is built on clear communication, thoughtful engineering, and a genuine understanding of your goals. We focus on delivering practical, scalable solutions while building long-term relationships based on trust and collaboration.',
+      'At Jencolink, we believe successful software is built on clear communication, thoughtful engineering, and a genuine understanding of your goals. We focus on delivering practical, scalable solutions while building long-term relationships based on trust and collaboration.',
   },
   faqSection: {
     eyebrow: 'Frequently Asked Questions',
@@ -342,7 +342,7 @@ const defaultContent: SiteContent = {
       "Whether you're starting a new project, exploring an idea, or looking to improve an existing system, we'd love to hear from you. Share your goals with us, and we'll get back to you within one business day.",
   },
   companyDetails: {
-    brandName: 'Gencolink',
+    brandName: 'Jencolink',
     tagline: 'Building software that supports growth, innovation, and lasting value.',
     email: 'hello@gencolink.com',
     phonePrimary: '+94 71 4 280 380',
@@ -354,6 +354,13 @@ const defaultContent: SiteContent = {
     tiktokUrl: '',
   },
 };
+
+/**
+ * The public name is Jencolink. Older stored copy may still say Gencolink.
+ */
+function publicBrand(value: string): string {
+  return value.replaceAll('Gencolink', 'Jencolink');
+}
 
 /**
  * Directus json columns come back as an actual array on some databases and as
@@ -475,9 +482,9 @@ export class SiteContentService {
 
       const whySection: WhySectionContent = whySecData.data?.['heading']
         ? {
-            eyebrow: whySecData.data['eyebrow'] as string,
+            eyebrow: publicBrand(whySecData.data['eyebrow'] as string),
             heading: whySecData.data['heading'] as string,
-            description: whySecData.data['description'] as string,
+            description: publicBrand(whySecData.data['description'] as string),
           }
         : defaultContent.whySection;
 
@@ -506,7 +513,7 @@ export class SiteContentService {
 
       const companyDetails: CompanyDetailsContent = companyData.data?.['brandName']
         ? {
-            brandName: companyData.data['brandName'] as string,
+            brandName: 'Jencolink',
             tagline: companyData.data['tagline'] as string,
             email: companyData.data['email'] as string,
             phonePrimary: companyData.data['phonePrimary'] as string,
