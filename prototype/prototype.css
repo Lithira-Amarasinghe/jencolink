@@ -153,13 +153,13 @@ html.nav-open body {
   }
 }
 
-/* Landing lockup — name and mission on the left, chain on the right. */
+/* Landing lockup — chain on the left, name and mission on the right. */
 
 .hero-split {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(260px, 0.88fr);
+  grid-template-columns: minmax(260px, 0.88fr) minmax(0, 1.12fr);
   align-items: center;
   column-gap: clamp(32px, 4vw, 72px);
   min-height: 100vh;
@@ -285,7 +285,8 @@ html.nav-open body {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  order: -1;
   min-width: 0;
 }
 
@@ -338,6 +339,7 @@ html.nav-open body {
   }
 
   .hero-emblem {
+    order: 0;
     justify-content: center;
   }
 
@@ -425,7 +427,7 @@ html.nav-open body {
 @keyframes hero-mark-in {
   from {
     opacity: 0;
-    transform: translate3d(48px, 0, 0);
+    transform: translate3d(-48px, 0, 0);
   }
   to {
     opacity: 1;
