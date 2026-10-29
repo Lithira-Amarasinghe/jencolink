@@ -1,17 +1,8 @@
+# Retired. Contact messages go to Web3Forms from the browser.
+# Left available as a manual run so the existing Function App is not deployed on every push.
 name: Functions (Azure)
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'functions/**'
-      - '.github/workflows/functions.yml'
-  pull_request:
-    branches:
-      - master
-    paths:
-      - 'functions/**'
   workflow_dispatch:
 
 env:

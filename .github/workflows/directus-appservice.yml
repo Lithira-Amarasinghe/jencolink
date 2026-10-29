@@ -1,12 +1,8 @@
+# Retired. The website reads Sanity and sends the contact form through Web3Forms.
+# Left available as a manual run so the existing Azure app is not deployed on every push.
 name: Directus (App Service - Docker)
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'Directus/**'
-      - '.github/workflows/directus-appservice.yml'
   workflow_dispatch:
 
 env:

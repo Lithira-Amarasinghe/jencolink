@@ -27,7 +27,7 @@ describe('App', () => {
 
   // Regression test. Rows are hidden by GSAP's from-state until their
   // ScrollTrigger observes them, so any DOM rendered after the last setup pass
-  // would stay invisible. When the Directus fetch FAILS, SiteContentService
+  // would stay invisible. When the Sanity fetch fails, SiteContentService
   // keeps the default content, so content() never changes - only loading()
   // flips, and that flip is what swaps skeletons for the real rows. If the
   // reveal effect tracks content() alone it never re-runs here, and every

@@ -49,14 +49,13 @@ jobs:
       - name: Build production
         run: npm run build -- --configuration production
 
-      - name: Inject Directus Runtime Config to browser dir
+      - name: Inject Sanity and Web3Forms runtime config
         run: |
           mkdir -p dist/gencolink/browser
-          # Directus API URL injected from GitHub secrets (set by Terraform)
-          # Falls back to localhost only if explicitly needed for local dev
           cat > dist/gencolink/browser/runtime-config.js << 'EOF'
-          window.__DIRECTUS_URL__ = '${{ secrets.DIRECTUS_API_URL }}';
-          window.__API_TIMEOUT__ = 30000;
+          window.__SANITY_PROJECT_ID__ = '${{ secrets.SANITY_PROJECT_ID }}';
+          window.__SANITY_DATASET__ = '${{ secrets.SANITY_DATASET }}' || 'production';
+          window.__WEB3FORMS_ACCESS_KEY__ = '${{ secrets.WEB3FORMS_ACCESS_KEY }}';
           window.__APP_ENV__ = 'production';
           EOF
 

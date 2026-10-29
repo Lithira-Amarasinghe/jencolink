@@ -6,17 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a multi-project repo, not a single app:
 
-- **`Directus/`** — Directus 10.13.1 headless CMS, run via Docker Compose, SQLite backend. Manages "What We Do" and "Our Products" content so the website can be updated without redeploys.
+- **`studio/`** — Sanity Studio. Editors change services, values, FAQ, section headings, and company details here. The website reads the public dataset.
 - **`Website/`** — Angular 20 (standalone components, signals) frontend, project name `gencolink`.
-- **`functions/`** — Azure Functions (JS, Node ≥18). Single HTTP function `send-contact-email` using `@azure/communication-email`. It's triggered by a **Directus Flow** (webhook on the `contact_submissions` collection) — this wiring lives in Directus config, not in code, so grepping `functions/` alone won't reveal the trigger.
+- **`Directus/`** and **`functions/`** — previous CMS and contact-email function. The site no longer calls them. Contact messages post to Web3Forms from the browser.
 
-Integration flow: Directus `GET /items/site_content` → `Website/public/runtime-config.js` (sets `window.__DIRECTUS_URL__`) → Angular `SiteContentService` (falls back to defaults if the fetch fails). **`runtime-config.js` is the only place to change the CMS URL for prod** — no rebuild needed, easy to miss.
+Integration flow: Sanity query API → `Website/public/runtime-config.js` (`window.__SANITY_PROJECT_ID__`, `window.__SANITY_DATASET__`, `window.__WEB3FORMS_ACCESS_KEY__`) → Angular `SiteContentService` (falls back to defaults if the project id is empty or the fetch fails). Production overwrites `runtime-config.js` in the frontend workflow.
 
 ## Setup / running each project
 
-- **Directus**: `docker compose up -d` from `Directus/`, then run `node setup.js` once to bootstrap collections/seed data — this is a manual, one-time step, not automatic.
-- **Website**: standard Angular CLI — `npm start` (`ng serve`), `npm run build`, `npm test` (Karma/Jasmine via Puppeteer). No lint script configured.
-- **functions**: `npm start` runs `func start` (requires Azure Functions Core Tools). `npm run build` is a no-op (`echo`) — plain JS, no build step.
+- **Studio**: `npm install` then `npm run dev` from `studio/`. See `studio/README.md` for the Sanity project id, CORS origin, and seed token.
+- **Website**: standard Angular CLI — `npm start` (`ng serve`), `npm run build`, `npm test` (Karma/Jasmine via Puppeteer). No lint script configured. Put the Sanity project id and Web3Forms access key in `Website/public/runtime-config.js`.
 
 No CI is configured for this repo yet.
 
@@ -28,7 +27,7 @@ No CI is configured for this repo yet.
 ## Secrets — do not expose
 
 - `Directus/.env` contains real dev secrets. It's excluded via `Directus/.gitignore`, and a `.git/hooks/pre-commit` hook blocks commits that stage it — don't weaken either without flagging it to the user.
-- Never put real credentials in tracked files (READMEs, docs, tfvars.example, compose files). Local secrets live only in gitignored files (`Directus/.env`, `functions/local.settings.json`, `infra/terraform/terraform.tfvars`); Azure secrets are Terraform-generated into Key Vault. Point docs at those, never inline the values.
+- Never put real credentials in tracked files (READMEs, docs, tfvars.example, compose files). Local secrets live only in gitignored files (`studio/.env`, `Directus/.env`, `functions/local.settings.json`, `infra/terraform/terraform.tfvars`). The Web3Forms access key and Sanity project id belong in `Website/public/runtime-config.js` locally and in GitHub Actions secrets for production. Do not commit a write token.
 
 ## Ignore these when exploring/committing
 

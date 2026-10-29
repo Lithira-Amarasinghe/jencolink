@@ -5,6 +5,12 @@ functions/node_modules/
 # Directus bootstrap script dependencies
 Directus/node_modules/
 
+# Sanity Studio
+studio/node_modules/
+studio/.env
+studio/dist/
+studio/.sanity/
+
 # Terraform — state and vars contain secrets/credentials
 infra/terraform/**/.terraform/
 infra/terraform/**/*.tfstate
