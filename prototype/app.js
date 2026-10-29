@@ -194,35 +194,190 @@
   });
 
   initHero(reducedMotion);
+  initCatalog(reducedMotion);
+  initSectionSpy();
 })();
+
+function initSectionSpy() {
+  const links = [...document.querySelectorAll(".desktop-nav [data-scroll], .mobile-nav [data-scroll]")];
+  const sections = ["services", "why", "faq", "contact"]
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+  if (!links.length || !sections.length) return;
+
+  const mark = () => {
+    const line = window.innerHeight * 0.32;
+    let current = "";
+    for (const section of sections) {
+      if (section.getBoundingClientRect().top <= line) current = section.id;
+    }
+    for (const link of links) {
+      if (link.getAttribute("data-scroll") === current) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    }
+  };
+
+  mark();
+  window.addEventListener("scroll", mark, { passive: true });
+}
+
+function initCatalog(reducedMotion) {
+  const list = document.querySelector(".service-list");
+  if (!list) return;
+  const rows = [...list.querySelectorAll(".service-row")];
+  const filter = document.querySelector(".service-filter");
+  const filterLabel = filter?.querySelector("[data-filter-label]");
+  const topic = document.querySelector(".contact-topic");
+  const topicName = topic?.querySelector("[data-topic-name]");
+  const message = document.querySelector('[name="message"]');
+  let activeLane = null;
+  let starter = "";
+
+  const setTopic = (title) => {
+    if (!topic || !topicName) return;
+    topic.hidden = false;
+    topicName.textContent = title;
+    const next = `I'd like to talk about ${title}.`;
+    if (message && (message.value.trim() === "" || message.value === starter)) {
+      message.value = next;
+      starter = next;
+    }
+  };
+
+  const clearTopic = () => {
+    if (topic) topic.hidden = true;
+    if (message && message.value === starter) message.value = "";
+    starter = "";
+  };
+
+  topic?.querySelector("[data-topic-clear]")?.addEventListener("click", clearTopic);
+
+  rows.forEach((row, index) => {
+    const title = row.querySelector(".service-title");
+    const copy = row.querySelector(".service-row-copy");
+    if (!title || !copy) return;
+    const name = title.textContent.trim();
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "service-toggle";
+    button.textContent = name;
+    button.setAttribute("aria-expanded", "false");
+    const panelId = `service-panel-${index + 1}`;
+    button.setAttribute("aria-controls", panelId);
+    title.replaceChildren(button);
+
+    const panel = document.createElement("div");
+    panel.className = "service-panel";
+    panel.id = panelId;
+    const inner = document.createElement("div");
+    inner.className = "service-panel-inner";
+    const more = document.createElement("p");
+    more.className = "service-more";
+    more.textContent = row.dataset.more || "";
+    const talk = document.createElement("button");
+    talk.type = "button";
+    talk.className = "service-talk";
+    talk.textContent = "Talk about this";
+    inner.append(more, talk);
+    panel.append(inner);
+    copy.append(panel);
+
+    const setOpen = (open) => {
+      row.classList.toggle("is-open", open);
+      button.setAttribute("aria-expanded", open ? "true" : "false");
+    };
+
+    button.addEventListener("click", () => {
+      const open = !row.classList.contains("is-open");
+      for (const other of rows) {
+        if (other !== row) {
+          other.classList.remove("is-open");
+          other.querySelector(".service-toggle")?.setAttribute("aria-expanded", "false");
+        }
+      }
+      setOpen(open);
+    });
+
+    talk.addEventListener("click", () => {
+      setTopic(name);
+      const contact = document.getElementById("contact");
+      contact?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+      window.setTimeout(() => message?.focus(), reducedMotion ? 0 : 450);
+    });
+  });
+
+  list.addEventListener("keydown", (event) => {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    const toggles = [...list.querySelectorAll(".service-toggle")];
+    const index = toggles.indexOf(document.activeElement);
+    if (index < 0) return;
+    event.preventDefault();
+    const direction = event.key === "ArrowDown" ? 1 : -1;
+    toggles[(index + direction + toggles.length) % toggles.length].focus();
+  });
+
+  const applyFilter = (lane, label) => {
+    activeLane = lane || null;
+    const on = Boolean(activeLane);
+    if (filter) filter.hidden = !on;
+    if (filterLabel) filterLabel.textContent = label || "";
+    for (const row of rows) {
+      row.classList.toggle("is-dimmed", on && row.dataset.lane !== activeLane);
+    }
+  };
+
+  document.addEventListener("jencolink:lane", (event) => {
+    applyFilter(event.detail?.lane, event.detail?.label);
+  });
+
+  filter?.querySelector("[data-filter-clear]")?.addEventListener("click", () => {
+    document.dispatchEvent(new CustomEvent("jencolink:lane", { detail: { lane: null, label: "", source: "catalog" } }));
+  });
+}
 
 function initHero(reducedMotion) {
   const scene = document.querySelector(".hero");
   if (!scene) return;
   const signal = document.getElementById("hero-signal");
   const noteWrap = scene.querySelector(".hero-note-wrap");
+  const more = scene.querySelector(".hero-more");
+  const hint = scene.querySelector(".hero-drag-hint");
   const buttons = [...scene.querySelectorAll(".hero-tags button")];
   let lane = null;
   let clearTimer = 0;
 
-  const applyLane = (button) => {
+  const applyLane = (button, source) => {
     lane = button ? button.dataset.lane : null;
     scene.dataset.linked = lane ? "true" : "false";
     for (const item of buttons) {
       item.setAttribute("aria-checked", item === button ? "true" : "false");
     }
+    if (more) more.hidden = !button;
     window.clearTimeout(clearTimer);
-    if (!signal || !noteWrap) return;
-    if (button) {
-      signal.textContent = button.dataset.copy || "";
-      noteWrap.dataset.open = "true";
-      return;
+    if (signal && noteWrap) {
+      if (button) {
+        signal.textContent = button.dataset.copy || "";
+        noteWrap.dataset.open = "true";
+      } else {
+        noteWrap.dataset.open = "false";
+        clearTimer = window.setTimeout(() => {
+          if (noteWrap.dataset.open !== "true") signal.textContent = "";
+        }, 420);
+      }
     }
-    noteWrap.dataset.open = "false";
-    clearTimer = window.setTimeout(() => {
-      if (noteWrap.dataset.open !== "true") signal.textContent = "";
-    }, 420);
+    if (source !== "catalog") {
+      document.dispatchEvent(
+        new CustomEvent("jencolink:lane", {
+          detail: { lane, label: button ? button.textContent.trim() : "", source: "hero" },
+        }),
+      );
+    }
   };
+
+  document.addEventListener("jencolink:lane", (event) => {
+    if (event.detail?.source !== "catalog") return;
+    applyLane(null, "catalog");
+  });
 
   for (const button of buttons) {
     button.addEventListener("click", () => {
@@ -239,6 +394,10 @@ function initHero(reducedMotion) {
     const next = buttons[(index + direction + buttons.length) % buttons.length];
     next.focus();
     applyLane(next);
+  });
+
+  scene.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "touch") hint?.classList.add("is-gone");
   });
 
   if (reducedMotion) return;
@@ -262,8 +421,9 @@ function initHero(reducedMotion) {
 
   scene.addEventListener("pointermove", (event) => {
     const rect = scene.getBoundingClientRect();
-    tx = (event.clientX - rect.left) / rect.width - 0.5;
-    ty = (event.clientY - rect.top) / rect.height - 0.5;
+    const gain = event.pointerType === "touch" ? 1.65 : 1;
+    tx = Math.max(-0.5, Math.min(0.5, ((event.clientX - rect.left) / rect.width - 0.5) * gain));
+    ty = Math.max(-0.5, Math.min(0.5, ((event.clientY - rect.top) / rect.height - 0.5) * gain));
     inside = true;
   });
   scene.addEventListener("pointerleave", () => {

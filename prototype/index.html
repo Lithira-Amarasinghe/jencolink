@@ -153,6 +153,7 @@
             <div class="hero-note-wrap" data-open="false">
               <p class="hero-note" id="hero-signal" aria-live="polite"></p>
             </div>
+            <button type="button" class="hero-more" data-scroll="services" hidden>See these services</button>
           </div>
           <div class="hero-emblem" aria-hidden="true">
             <div class="hero-emblem-in">
@@ -162,6 +163,7 @@
                 </svg>
               </div>
             </div>
+            <p class="hero-drag-hint">Drag to tilt</p>
           </div>
         </div>
       </section>
@@ -181,8 +183,12 @@
             </div>
           </div>
         </div>
+        <div class="service-filter" hidden>
+          <p>Showing <strong data-filter-label></strong></p>
+          <button type="button" data-filter-clear>Show all</button>
+        </div>
         <div class="service-list" aria-label="Jencolink service catalog">
-          <article class="service-row">
+          <article class="service-row" data-lane="web" data-more="Sites and products people come back to, structured so your team can keep changing them.">
             <div class="service-row-inner">
               <span class="service-index" aria-hidden="true">01</span>
               <div class="service-row-copy">
@@ -191,7 +197,7 @@
               </div>
             </div>
           </article>
-          <article class="service-row">
+          <article class="service-row" data-lane="web" data-more="Storefronts that stay reliable through checkout, stock, and the marketplaces you already sell on.">
             <div class="service-row-inner">
               <span class="service-index" aria-hidden="true">02</span>
               <div class="service-row-copy">
@@ -200,7 +206,7 @@
               </div>
             </div>
           </article>
-          <article class="service-row">
+          <article class="service-row" data-lane="flow" data-more="The repeated steps between people and systems, taken out of the ordinary day.">
             <div class="service-row-inner">
               <span class="service-index" aria-hidden="true">03</span>
               <div class="service-row-copy">
@@ -209,7 +215,7 @@
               </div>
             </div>
           </article>
-          <article class="service-row">
+          <article class="service-row" data-lane="cloud" data-more="One picture of stock and sales, from the counter to every branch.">
             <div class="service-row-inner">
               <span class="service-index" aria-hidden="true">04</span>
               <div class="service-row-copy">
@@ -218,7 +224,7 @@
               </div>
             </div>
           </article>
-          <article class="service-row">
+          <article class="service-row" data-lane="cloud" data-more="Orders, tables, and the kitchen working from the same system.">
             <div class="service-row-inner">
               <span class="service-index" aria-hidden="true">05</span>
               <div class="service-row-copy">
@@ -227,7 +233,7 @@
               </div>
             </div>
           </article>
-          <article class="service-row">
+          <article class="service-row" data-lane="cloud" data-more="Suppliers, warehouses, and purchasing connected, instead of reconciled by hand.">
             <div class="service-row-inner">
               <span class="service-index" aria-hidden="true">06</span>
               <div class="service-row-copy">
@@ -236,7 +242,7 @@
               </div>
             </div>
           </article>
-          <article class="service-row">
+          <article class="service-row" data-lane="cloud" data-more="Bookings, packages, and guest handling kept in one place.">
             <div class="service-row-inner">
               <span class="service-index" aria-hidden="true">07</span>
               <div class="service-row-copy">
@@ -245,7 +251,7 @@
               </div>
             </div>
           </article>
-          <article class="service-row">
+          <article class="service-row" data-lane="cloud" data-more="Appointments, records, and the front desk working from the same source.">
             <div class="service-row-inner">
               <span class="service-index" aria-hidden="true">08</span>
               <div class="service-row-copy">
@@ -254,7 +260,7 @@
               </div>
             </div>
           </article>
-          <article class="service-row">
+          <article class="service-row" data-lane="web" data-more="Classes, exams, and the institution's day kept on one platform.">
             <div class="service-row-inner">
               <span class="service-index" aria-hidden="true">09</span>
               <div class="service-row-copy">
@@ -263,7 +269,7 @@
               </div>
             </div>
           </article>
-          <article class="service-row">
+          <article class="service-row" data-lane="web" data-more="Software shaped around the operation, from the first API to the product people use.">
             <div class="service-row-inner">
               <span class="service-index" aria-hidden="true">10</span>
               <div class="service-row-copy">
@@ -452,6 +458,10 @@
                 <input type="text" name="company" autocomplete="organization" placeholder="Your company" />
               </span>
             </label>
+            <p class="contact-topic" hidden>
+              <span>About <strong data-topic-name></strong></span>
+              <button type="button" data-topic-clear>Clear</button>
+            </p>
             <label class="message-field">
               <span>How can we help?</span>
               <span class="field-input">
