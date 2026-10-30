@@ -28,12 +28,4 @@ resource "azurerm_role_assignment" "deployer_secrets_officer" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
-# Azure Functions managed identity reads secrets (if provided)
-resource "azurerm_role_assignment" "functions_secrets_user" {
-  count                = var.functions_principal_id != null ? 1 : 0
-  scope                = azurerm_key_vault.main.id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = var.functions_principal_id
-}
-
 data "azurerm_client_config" "current" {}

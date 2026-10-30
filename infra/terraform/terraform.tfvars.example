@@ -20,8 +20,6 @@ primary_location = "eastus2"
 # Leave github_repo_token unset. The provider reads GITHUB_TOKEN.
 github_owner      = "Lithira-Amarasinghe"
 github_repository = "jencolink"
-github_repo_url   = "https://github.com/Lithira-Amarasinghe/jencolink"
-github_branch     = "master"
 
 # Same value as the AZURE_CLIENT_ID GitHub secret.
 # When set, apply grants that app "Key Vault Secrets User".

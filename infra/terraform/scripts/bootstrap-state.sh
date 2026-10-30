@@ -398,10 +398,10 @@ version already committed there):
     resource_group_name  = "${RESOURCE_GROUP}"
     storage_account_name = "${STORAGE_ACCOUNT}"
     container_name       = "${CONTAINER_NAME}"
-    key                  = "prod.tfstate"
+    key                  = "website.tfstate"
     use_azuread_auth     = true
   }
 
-Then run: terraform init -migrate-state
-(or use migrate-state.sh, which does both steps together)
+Then run: terraform init -reconfigure
+Do not migrate or copy prod.tfstate. website.tfstate starts empty.
 EOF

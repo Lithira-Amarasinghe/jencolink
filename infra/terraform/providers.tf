@@ -26,11 +26,16 @@ terraform {
   # resource group) is bootstrapped by hand via the Azure CLI, deliberately
   # outside this Terraform config, to avoid the chicken-and-egg problem of
   # state storage depending on itself.
+  #
+  # website.tfstate is a new empty state. prod.tfstate listed the old
+  # Directus, SQL, storage, and Functions resources. Those were removed in
+  # Azure by hand, so that file must not be copied here. Init with
+  # `terraform init -reconfigure` and do not migrate state.
   backend "azurerm" {
     resource_group_name  = "gencolink-rg-tfstate"
     storage_account_name = "gencolinktfstate"
     container_name       = "tfstate"
-    key                  = "prod.tfstate"
+    key                  = "website.tfstate"
     use_azuread_auth     = true
   }
 }

@@ -30,23 +30,6 @@ variable "location_short" {
   default     = ""
 }
 
-variable "github_repo_token" {
-  description = "GitHub PAT for SWA deployment"
-  type        = string
-  sensitive   = true
-}
-
-variable "github_repo_url" {
-  description = "GitHub repository URL"
-  type        = string
-}
-
-variable "github_branch" {
-  description = "GitHub branch to deploy from"
-  type        = string
-  default     = "master"
-}
-
 variable "tags" {
   description = "Tags for resources"
   type        = map(string)

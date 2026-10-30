@@ -10,7 +10,7 @@ editing studio. The contact form posts to Web3Forms from the browser.
 | Content | Sanity content API |
 | Editing UI | Sanity Studio at `https://jencolink.sanity.studio` |
 | Contact | Web3Forms |
-| Terraform state | Storage account `gencolinktfstate` (already created, outside this config) |
+| Terraform state | New empty file `website.tfstate` in storage account `gencolinktfstate` |
 
 `runtime-config.js` is a small file the built site loads before Angular.
 Locally it lives in `Website/public/runtime-config.js`. On deploy, the
@@ -26,8 +26,8 @@ GitHub workflow overwrites the built copy with the Key Vault values.
   `AZURE_SWA_NAME`, `AZURE_SWA_DEPLOYMENT_TOKEN`.
 
 Terraform does not create a database, a storage account for the site, or an
-app service. An apply against the previous state removes the old Directus
-app, SQL database, upload storage, functions app, and their network.
+app service. State starts empty. It does not know about resources you
+already deleted, and it will not try to delete or recreate them.
 
 ## One-time setup
 
@@ -53,18 +53,22 @@ app, SQL database, upload storage, functions app, and their network.
 
 ## Apply
 
+Use a new `terraform.tfvars` from the example. An older file still lists
+Directus, SQL, and Functions settings, and Terraform will refuse it.
+
 ```bash
 cd infra/terraform
-terraform init
+cp terraform.tfvars.example terraform.tfvars
+terraform init -reconfigure
 terraform plan
 terraform apply
 ```
 
-There is no workflow that runs Terraform. You apply it yourself.
+`terraform init` may ask to copy the old `prod.tfstate`. Answer **no**.
+`-reconfigure` keeps the new `website.tfstate` empty. The plan should only
+create the vault, the three secret slots, the website, and the GitHub secrets.
 
-Read the plan before you confirm. If this environment was applied before,
-the plan deletes the old Directus app, SQL server, storage account, and
-Functions app.
+There is no workflow that runs Terraform. You apply it yourself.
 
 ## Fill the vault
 

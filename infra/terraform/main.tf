@@ -69,9 +69,6 @@ module "static_web_app" {
   location            = local.frontend_location
   project_name        = var.project_name
   environment         = var.environment
-  github_repo_token   = var.github_repo_token
-  github_repo_url     = var.github_repo_url
-  github_branch       = var.github_branch
   tags                = local.frontend_tags
 }
 

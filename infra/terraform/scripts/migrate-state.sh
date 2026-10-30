@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # migrate-state.sh — Ensure the remote state backend exists (via
-# bootstrap-state.sh), then migrate the current Terraform state into it.
+# bootstrap-state.sh), then point Terraform at the empty website.tfstate.
+# It does not copy prod.tfstate.
 #
 # Robustness guarantees:
 #   - Safe to re-run: detects when the backend is already azurerm and simply
@@ -9,17 +10,12 @@
 #   - Fails loud with an ERR trap reporting the exact failing line.
 #   - Checks for the `terraform` binary and a minimum version before doing
 #     anything.
-#   - Defaults to an interactive confirmation before copying state (the
-#     safe choice - force-copying could silently overwrite state that's
-#     already sitting in the remote backend). Pass --yes only when you are
-#     certain that's what you want.
-#   - Ends with a functional verification: not just "init succeeded", but
-#     that `terraform state list` actually returns the resources you'd
-#     expect from your prior state.
+#   - Does not copy an older state file. website.tfstate starts empty.
+#   - Ends by checking that the backend is readable.
 #
 # Usage:
-#   ./migrate-state.sh              # interactive confirmation
-#   ./migrate-state.sh --yes        # non-interactive (terraform init -force-copy)
+#   ./migrate-state.sh              # init the empty remote state
+#   ./migrate-state.sh --yes        # same, non-interactive
 #   ./migrate-state.sh --dry-run    # print what would happen, change nothing
 #   ./migrate-state.sh --help
 
@@ -51,12 +47,11 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [--yes] [--dry-run] [--help]
 
-Ensures the remote state backend exists, then migrates the current
-Terraform state into it.
+Ensures the remote state backend exists, then runs
+terraform init -reconfigure against the empty website.tfstate.
+It does not copy prod.tfstate.
 
-  --yes       Non-interactive: terraform init -migrate-state -force-copy.
-              Only use this when you're certain the remote is safe to
-              overwrite (e.g. a known-empty first-time migration).
+  --yes       Accepted for compatibility. Init is already non-interactive.
   --dry-run   Show what would happen; make no changes.
   --help      Show this message.
 EOF
@@ -100,9 +95,9 @@ else
   "${SCRIPT_DIR}/bootstrap-state.sh"
 fi
 
-# ─── Step 2: migrate ─────────────────────────────────────────────────────────
+# ─── Step 2: attach the empty state ─────────────────────────────────────────
 
-log "Step 2/2: Migrating Terraform state"
+log "Step 2/2: Initializing the empty website.tfstate"
 cd "${TERRAFORM_DIR}"
 
 if ! grep -q 'backend "azurerm"' providers.tf; then
@@ -111,32 +106,17 @@ if ! grep -q 'backend "azurerm"' providers.tf; then
   exit 1
 fi
 
-# Detect whether we're already on the azurerm backend (e.g. a re-run after
-# a prior successful migration) so we don't needlessly prompt again.
-ALREADY_REMOTE=false
-if [[ -f .terraform/terraform.tfstate ]]; then
-  if grep -q '"backend"' .terraform/terraform.tfstate 2>/dev/null && \
-     grep -q '"type": "azurerm"' .terraform/terraform.tfstate 2>/dev/null; then
-    ALREADY_REMOTE=true
-  fi
+if ! grep -q 'key *= *"website.tfstate"' providers.tf; then
+  fail "providers.tf is not using website.tfstate."
+  fail "Do not point this config back at prod.tfstate."
+  exit 1
 fi
 
-if $ALREADY_REMOTE; then
-  skip "Already configured for the azurerm backend - re-initializing to verify, not migrating."
-  if $DRY_RUN; then
-    echo "  (dry-run) would run: terraform init"
-  else
-    terraform init -input=false >/dev/null
-    ok "backend re-verified"
-  fi
-elif $DRY_RUN; then
-  echo "  (dry-run) would run: terraform init -migrate-state $($FORCE && echo -force-copy)"
-elif $FORCE; then
-  warn "Running non-interactively (--yes): existing remote state, if any, will be overwritten."
-  terraform init -migrate-state -force-copy
+if $DRY_RUN; then
+  echo "  (dry-run) would run: terraform init -reconfigure -input=false"
 else
-  echo "Running interactively - you'll be asked to confirm the state copy."
-  terraform init -migrate-state
+  terraform init -reconfigure -input=false
+  ok "backend points at an empty website.tfstate"
 fi
 
 if $DRY_RUN; then
@@ -152,10 +132,7 @@ fi
 log "Verifying"
 RESOURCE_COUNT="$(terraform state list 2>/dev/null | wc -l | tr -d ' ')"
 if [[ "${RESOURCE_COUNT}" -eq 0 ]]; then
-  warn "Remote backend is readable but reports 0 resources."
-  warn "If you expected existing infrastructure to show up here, check the"
-  warn "'key' value in providers.tf's backend block - a typo there silently"
-  warn "points Terraform at a different, empty state file."
+  ok "Remote backend is readable and empty. terraform apply will create the website and vault."
 else
   ok "Remote backend is active and readable (${RESOURCE_COUNT} resources tracked)."
 fi
