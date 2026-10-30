@@ -17,7 +17,7 @@ Integration flow: Sanity query API → `Website/public/runtime-config.js` (`wind
 - **Studio**: `npm install` then `npm run dev` from `studio/`. See `studio/README.md` for the Sanity project id, CORS origin, and seed token.
 - **Website**: standard Angular CLI — `npm start` (`ng serve`), `npm run build`, `npm test` (Karma/Jasmine via Puppeteer). No lint script configured. Put the Sanity project id and Web3Forms access key in `Website/public/runtime-config.js`.
 
-No CI is configured for this repo yet.
+`.github/workflows/frontend.yml` builds the site on pull requests and, on `master`, reads `sanity-project-id`, `sanity-dataset`, and `web3forms-access-key` from Azure Key Vault, then deploys the Static Web App. See `infra/DEPLOYMENT.md`.
 
 ## Code style (Website/)
 
@@ -27,7 +27,7 @@ No CI is configured for this repo yet.
 ## Secrets — do not expose
 
 - `Directus/.env` contains real dev secrets. It's excluded via `Directus/.gitignore`, and a `.git/hooks/pre-commit` hook blocks commits that stage it — don't weaken either without flagging it to the user.
-- Never put real credentials in tracked files (READMEs, docs, tfvars.example, compose files). Local secrets live only in gitignored files (`studio/.env`, `Directus/.env`, `functions/local.settings.json`, `infra/terraform/terraform.tfvars`). The Web3Forms access key and Sanity project id belong in `Website/public/runtime-config.js` locally and in GitHub Actions secrets for production. Do not commit a write token.
+- Never put real credentials in tracked files (READMEs, docs, tfvars.example, compose files). Local secrets live only in gitignored files (`studio/.env`, `Directus/.env`, `functions/local.settings.json`, `infra/terraform/terraform.tfvars`). The Web3Forms access key and Sanity project id belong in `Website/public/runtime-config.js` locally and in Key Vault secrets `web3forms-access-key` and `sanity-project-id` for production. Do not commit a write token.
 
 ## Ignore these when exploring/committing
 

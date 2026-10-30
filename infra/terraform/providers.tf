@@ -5,13 +5,17 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.1"
-    }
     github = {
       source  = "integrations/github"
       version = "~> 6.0"
+    }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 3.0"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.13"
     }
   }
 
@@ -50,3 +54,7 @@ provider "github" {
   token = var.github_repo_token != "" ? var.github_repo_token : null
   owner = var.github_owner
 }
+
+# Used only when github_actions_client_id is set, to look up that app's
+# service principal and grant it Key Vault Secrets User.
+provider "azuread" {}

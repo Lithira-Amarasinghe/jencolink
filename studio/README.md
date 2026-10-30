@@ -38,4 +38,4 @@ npm run dev
 
 Studio runs at http://localhost:3333. The website keeps its built-in copy until the project ID is set and the seed has published.
 
-Production builds inject `SANITY_PROJECT_ID`, `SANITY_DATASET`, and `WEB3FORMS_ACCESS_KEY` from GitHub Actions secrets.
+Production deploys read `sanity-project-id`, `sanity-dataset`, and `web3forms-access-key` from Azure Key Vault and write them into the built `runtime-config.js`.

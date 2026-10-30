@@ -78,16 +78,23 @@ variable "tags" {
 # DIRECTUS CONFIGURATION
 # ============================================================
 variable "directus_admin_email" {
-  description = "Directus admin email"
+  description = "Unused. Kept so an older terraform.tfvars file still loads."
   type        = string
+  default     = ""
 }
 
-# directus_admin_password / directus_admin_token / directus_jwt_secret are no
-# longer input variables — main.tf generates them with random_password and
-# writes them to Key Vault + GitHub Secrets, so there's one source of truth.
+variable "github_actions_client_id" {
+  description = "Application (client) ID of the GitHub Actions OIDC app (the same value as the AZURE_CLIENT_ID GitHub secret). When set, Terraform grants that app Key Vault Secrets User so the website workflow can read secrets. Leave empty to assign the role yourself."
+  type        = string
+  default     = ""
+}
+
+# Older tfvars may still set the unused variables below. They are declared
+# so `terraform plan` keeps loading that file. Nothing in this configuration
+# reads them.
 
 # ============================================================
-# ADDITIONAL VARIABLES (for terraform.tfvars compatibility)
+# UNUSED VARIABLES (older terraform.tfvars compatibility)
 # ============================================================
 variable "contact_recipient_email" {
   description = "Email to receive contact form submissions"
@@ -123,7 +130,7 @@ variable "github_owner" {
 variable "github_repository" {
   description = "GitHub repository name (no owner prefix)"
   type        = string
-  default     = "gencolink"
+  default     = "jencolink"
 }
 
 variable "github_branch" {
