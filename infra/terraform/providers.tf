@@ -5,13 +5,17 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.1"
-    }
     github = {
       source  = "integrations/github"
       version = "~> 6.0"
+    }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 3.0"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.13"
     }
   }
 
@@ -22,11 +26,16 @@ terraform {
   # resource group) is bootstrapped by hand via the Azure CLI, deliberately
   # outside this Terraform config, to avoid the chicken-and-egg problem of
   # state storage depending on itself.
+  #
+  # website.tfstate is a new empty state. prod.tfstate listed the old
+  # Directus, SQL, storage, and Functions resources. Those were removed in
+  # Azure by hand, so that file must not be copied here. Init with
+  # `terraform init -reconfigure` and do not migrate state.
   backend "azurerm" {
     resource_group_name  = "gencolink-rg-tfstate"
     storage_account_name = "gencolinktfstate"
     container_name       = "tfstate"
-    key                  = "prod.tfstate"
+    key                  = "website.tfstate"
     use_azuread_auth     = true
   }
 }
@@ -50,3 +59,7 @@ provider "github" {
   token = var.github_repo_token != "" ? var.github_repo_token : null
   owner = var.github_owner
 }
+
+# Used only when github_actions_client_id is set, to look up that app's
+# service principal and grant it Key Vault Secrets User.
+provider "azuread" {}

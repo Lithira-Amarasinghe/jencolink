@@ -362,22 +362,34 @@ function publicBrand(value: string): string {
   return value.replaceAll('Gencolink', 'Jencolink');
 }
 
-/**
- * Directus json columns come back as an actual array on some databases and as
- * a serialized JSON string on others (MSSQL). Accept both; anything else
- * becomes an empty list rather than a runtime error.
- */
-function parseStringArray(value: unknown): string[] {
-  if (Array.isArray(value)) return value.filter((v): v is string => typeof v === 'string');
-  if (typeof value === 'string') {
-    try {
-      const parsed: unknown = JSON.parse(value);
-      if (Array.isArray(parsed)) return parsed.filter((v): v is string => typeof v === 'string');
-    } catch {
-      /* not JSON — fall through */
-    }
+type SanityConfig = {
+  __SANITY_PROJECT_ID__?: string;
+  __SANITY_DATASET__?: string;
+};
+
+const CONTENT_QUERY = `{
+  "services": *[_type == "service"] | order(sortOrder asc) { icon, title, body, items },
+  "products": *[_type == "product"] | order(sortOrder asc) { icon, title, body },
+  "values": *[_type == "value"] | order(sortOrder asc) { title, body },
+  "faqs": *[_type == "faq"] | order(sortOrder asc) { question, answer },
+  "caseStudies": *[_type == "caseStudy"] | order(sortOrder asc) {
+    industry, title, image, summary, stats[]{ value, label }
+  },
+  "hero": *[_id == "hero"][0]{ title, titleHighlight, description, primaryCta, secondaryCta, proofPoints },
+  "whySection": *[_id == "whySection"][0]{ eyebrow, heading, description },
+  "faqSection": *[_id == "faqSection"][0]{ eyebrow, heading },
+  "servicesSection": *[_id == "servicesSection"][0]{ eyebrow, heading, description },
+  "contactSection": *[_id == "contactSection"][0]{ eyebrow, heading, description },
+  "companyDetails": *[_id == "companyDetails"][0]{
+    brandName, tagline, email, phonePrimary, phoneSecondary,
+    linkedinUrl, githubUrl, facebookUrl, instagramUrl, tiktokUrl
   }
-  return [];
+}`;
+
+function strings(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -402,151 +414,135 @@ export class SiteContentService {
   readonly companyDetails = computed(() => this.content().companyDetails);
 
   async load(): Promise<void> {
-    const base = this.getBaseUrl();
-    if (!base) {
+    const projectId = this.projectId();
+    if (!projectId) {
       this.loading.set(false);
       return;
     }
 
     try {
-      const [svcRes, prdRes, valRes, faqRes, whySecRes, faqSecRes, svcSecRes, contactSecRes, companyRes] =
-        await Promise.all([
-          fetch(`${base}/items/services?sort=sort&filter[status][_eq]=published`, { cache: 'no-store', headers: { Accept: 'application/json' } }),
-          fetch(`${base}/items/products?sort=sort&filter[status][_eq]=published`, { cache: 'no-store', headers: { Accept: 'application/json' } }),
-          fetch(`${base}/items/values?sort=sort&filter[status][_eq]=published`, { cache: 'no-store', headers: { Accept: 'application/json' } }),
-          fetch(`${base}/items/faqs?sort=sort&filter[status][_eq]=published`, { cache: 'no-store', headers: { Accept: 'application/json' } }),
-          fetch(`${base}/items/why_section`, { cache: 'no-store', headers: { Accept: 'application/json' } }),
-          fetch(`${base}/items/faq_section`, { cache: 'no-store', headers: { Accept: 'application/json' } }),
-          fetch(`${base}/items/services_section`, { cache: 'no-store', headers: { Accept: 'application/json' } }),
-          fetch(`${base}/items/contact_section`, { cache: 'no-store', headers: { Accept: 'application/json' } }),
-          fetch(`${base}/items/company_details`, { cache: 'no-store', headers: { Accept: 'application/json' } }),
-        ]);
+      const dataset = (globalThis as SanityConfig).__SANITY_DATASET__?.trim() || 'production';
+      const url = `https://${projectId}.apicdn.sanity.io/v2025-01-01/data/query/${dataset}?query=${encodeURIComponent(CONTENT_QUERY)}`;
+      const response = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error('CMS fetch failed');
 
-      if (
-        !svcRes.ok ||
-        !prdRes.ok ||
-        !valRes.ok ||
-        !faqRes.ok ||
-        !whySecRes.ok ||
-        !faqSecRes.ok ||
-        !svcSecRes.ok ||
-        !contactSecRes.ok ||
-        !companyRes.ok
-      ) {
-        throw new Error('CMS fetch failed');
-      }
-
-      const [svcData, prdData, valData, faqData, whySecData, faqSecData, svcSecData, contactSecData, companyData] =
-        await Promise.all([
-          svcRes.json() as Promise<{ data: Record<string, unknown>[] }>,
-          prdRes.json() as Promise<{ data: Record<string, unknown>[] }>,
-          valRes.json() as Promise<{ data: Record<string, unknown>[] }>,
-          faqRes.json() as Promise<{ data: Record<string, unknown>[] }>,
-          whySecRes.json() as Promise<{ data: Record<string, unknown> | null }>,
-          faqSecRes.json() as Promise<{ data: Record<string, unknown> | null }>,
-          svcSecRes.json() as Promise<{ data: Record<string, unknown> | null }>,
-          contactSecRes.json() as Promise<{ data: Record<string, unknown> | null }>,
-          companyRes.json() as Promise<{ data: Record<string, unknown> | null }>,
-        ]);
-
-      const services: ServiceContent[] = svcData.data?.length
-        ? svcData.data.map((r) => ({
-            icon: r['icon'] as ServiceContent['icon'],
-            title: r['title'] as string,
-            body: r['body'] as string,
-            items: parseStringArray(r['items']),
-          }))
-        : defaultContent.services;
-
-      const products: ProductContent[] = prdData.data?.length
-        ? prdData.data.map((r) => ({
-            icon: r['icon'] as ProductContent['icon'],
-            title: r['title'] as string,
-            body: r['body'] as string,
-          }))
-        : defaultContent.products;
-
-      const values: ValueContent[] = valData.data?.length
-        ? valData.data.map((r) => ({
-            title: r['title'] as string,
-            body: r['body'] as string,
-          }))
-        : defaultContent.values;
-
-      const faqs: FaqContent[] = faqData.data?.length
-        ? faqData.data.map((r) => ({
-            question: r['question'] as string,
-            answer: r['answer'] as string,
-          }))
-        : defaultContent.faqs;
-
-      const whySection: WhySectionContent = whySecData.data?.['heading']
-        ? {
-            eyebrow: publicBrand(whySecData.data['eyebrow'] as string),
-            heading: whySecData.data['heading'] as string,
-            description: publicBrand(whySecData.data['description'] as string),
-          }
-        : defaultContent.whySection;
-
-      const faqSection: FaqSectionContent = faqSecData.data?.['heading']
-        ? {
-            eyebrow: faqSecData.data['eyebrow'] as string,
-            heading: faqSecData.data['heading'] as string,
-          }
-        : defaultContent.faqSection;
-
-      const servicesSection: ServicesSectionContent = svcSecData.data?.['heading']
-        ? {
-            eyebrow: svcSecData.data['eyebrow'] as string,
-            heading: svcSecData.data['heading'] as string,
-            description: svcSecData.data['description'] as string,
-          }
-        : defaultContent.servicesSection;
-
-      const contactSection: ContactSectionContent = contactSecData.data?.['heading']
-        ? {
-            eyebrow: contactSecData.data['eyebrow'] as string,
-            heading: contactSecData.data['heading'] as string,
-            description: contactSecData.data['description'] as string,
-          }
-        : defaultContent.contactSection;
-
-      const companyDetails: CompanyDetailsContent = companyData.data?.['brandName']
-        ? {
-            brandName: 'Jencolink',
-            tagline: companyData.data['tagline'] as string,
-            email: companyData.data['email'] as string,
-            phonePrimary: companyData.data['phonePrimary'] as string,
-            phoneSecondary: companyData.data['phoneSecondary'] as string,
-            linkedinUrl: companyData.data['linkedinUrl'] as string,
-            githubUrl: companyData.data['githubUrl'] as string,
-            facebookUrl: (companyData.data['facebookUrl'] as string) ?? '',
-            instagramUrl: (companyData.data['instagramUrl'] as string) ?? '',
-            tiktokUrl: (companyData.data['tiktokUrl'] as string) ?? '',
-          }
-        : defaultContent.companyDetails;
-
-      this.content.update((c) => ({
-        ...c,
-        services,
-        products,
-        values,
-        faqs,
-        whySection,
-        faqSection,
-        servicesSection,
-        contactSection,
-        companyDetails,
-      }));
+      const body = (await response.json()) as { result?: Record<string, unknown> };
+      const result = body.result ?? {};
+      this.content.set(this.fromSanity(result));
     } catch {
-      // Directus unreachable — keep default content already in signal
+      // Sanity unreachable — keep the copy already in the signal.
     } finally {
       this.loading.set(false);
     }
   }
 
-  private getBaseUrl(): string | null {
-    const url = (globalThis as { __DIRECTUS_URL__?: string }).__DIRECTUS_URL__;
-    return url ? url.replace(/\/$/, '') : null;
+  private projectId(): string | null {
+    const id = (globalThis as SanityConfig).__SANITY_PROJECT_ID__?.trim();
+    return id ? id : null;
+  }
+
+  private fromSanity(result: Record<string, unknown>): SiteContent {
+    const services = this.list<ServiceContent>(result['services'], (row) => ({
+      icon: row['icon'] as ServiceContent['icon'],
+      title: String(row['title'] ?? ''),
+      body: String(row['body'] ?? ''),
+      items: strings(row['items']),
+    }));
+    const products = this.list<ProductContent>(result['products'], (row) => ({
+      icon: row['icon'] as ProductContent['icon'],
+      title: String(row['title'] ?? ''),
+      body: String(row['body'] ?? ''),
+    }));
+    const values = this.list<ValueContent>(result['values'], (row) => ({
+      title: String(row['title'] ?? ''),
+      body: String(row['body'] ?? ''),
+    }));
+    const faqs = this.list<FaqContent>(result['faqs'], (row) => ({
+      question: String(row['question'] ?? ''),
+      answer: String(row['answer'] ?? ''),
+    }));
+    const caseStudies = this.list<CaseStudyContent>(result['caseStudies'], (row) => ({
+      industry: String(row['industry'] ?? ''),
+      title: String(row['title'] ?? ''),
+      image: String(row['image'] ?? ''),
+      summary: String(row['summary'] ?? ''),
+      stats: Array.isArray(row['stats'])
+        ? row['stats'].map((stat) => {
+            const item = stat as Record<string, unknown>;
+            return { value: String(item['value'] ?? ''), label: String(item['label'] ?? '') };
+          })
+        : [],
+    }));
+
+    return {
+      hero: this.section(result['hero'], defaultContent.hero, (row) => ({
+        title: String(row['title']),
+        titleHighlight: String(row['titleHighlight']),
+        description: String(row['description']),
+        primaryCta: String(row['primaryCta']),
+        secondaryCta: String(row['secondaryCta']),
+        proofPoints: strings(row['proofPoints']),
+      })),
+      services: services.length ? services : defaultContent.services,
+      products: products.length ? products : defaultContent.products,
+      caseStudies: caseStudies.length ? caseStudies : defaultContent.caseStudies,
+      values: values.length ? values : defaultContent.values,
+      faqs: faqs.length ? faqs : defaultContent.faqs,
+      whySection: this.section(result['whySection'], defaultContent.whySection, (row) => ({
+        eyebrow: publicBrand(String(row['eyebrow'] ?? '')),
+        heading: String(row['heading']),
+        description: publicBrand(String(row['description'] ?? '')),
+      })),
+      faqSection: this.section(result['faqSection'], defaultContent.faqSection, (row) => ({
+        eyebrow: String(row['eyebrow'] ?? ''),
+        heading: String(row['heading']),
+      })),
+      servicesSection: this.section(
+        result['servicesSection'],
+        defaultContent.servicesSection,
+        (row) => ({
+          eyebrow: String(row['eyebrow'] ?? ''),
+          heading: String(row['heading']),
+          description: String(row['description'] ?? ''),
+        }),
+      ),
+      contactSection: this.section(
+        result['contactSection'],
+        defaultContent.contactSection,
+        (row) => ({
+          eyebrow: String(row['eyebrow'] ?? ''),
+          heading: String(row['heading']),
+          description: String(row['description'] ?? ''),
+        }),
+      ),
+      companyDetails: this.section(
+        result['companyDetails'],
+        defaultContent.companyDetails,
+        (row) => ({
+          brandName: 'Jencolink',
+          tagline: String(row['tagline'] ?? ''),
+          email: String(row['email'] ?? ''),
+          phonePrimary: String(row['phonePrimary'] ?? ''),
+          phoneSecondary: String(row['phoneSecondary'] ?? ''),
+          linkedinUrl: String(row['linkedinUrl'] ?? ''),
+          githubUrl: String(row['githubUrl'] ?? ''),
+          facebookUrl: String(row['facebookUrl'] ?? ''),
+          instagramUrl: String(row['instagramUrl'] ?? ''),
+          tiktokUrl: String(row['tiktokUrl'] ?? ''),
+        }),
+      ),
+    };
+  }
+
+  private list<T>(value: unknown, map: (row: Record<string, unknown>) => T): T[] {
+    if (!Array.isArray(value)) return [];
+    return value.map((row) => map(row as Record<string, unknown>));
+  }
+
+  private section<T>(value: unknown, fallback: T, map: (row: Record<string, unknown>) => T): T {
+    if (!value || typeof value !== 'object') return fallback;
+    const row = value as Record<string, unknown>;
+    const present = ['heading', 'title', 'brandName', 'email'].some((key) => Boolean(row[key]));
+    return present ? map(row) : fallback;
   }
 }

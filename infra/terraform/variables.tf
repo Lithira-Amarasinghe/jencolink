@@ -16,101 +16,44 @@ variable "environment" {
   default     = "prod"
 }
 
-# ============================================================
-# PRIMARY LOCATION (for most services)
-# ============================================================
 variable "primary_location" {
-  description = "Primary Azure region for most resources"
+  description = "Primary Azure region"
   type        = string
   default     = "eastus2"
-}
-
-# ============================================================
-# SERVICE-SPECIFIC LOCATIONS (overrides primary if set)
-# ============================================================
-variable "directus_location" {
-  description = "Location for the Directus App Service (CMS workload)"
-  type        = string
-  default     = null # Falls back to primary_location
 }
 
 variable "frontend_location" {
   description = "Location for Static Web App (limited regions: centralus, eastus2, westus2, westeurope, eastasia)"
   type        = string
-  default     = null # Falls back to primary_location
-}
-
-variable "app_service_location" {
-  description = "Location for App Service Plan + Web App (can be any region)"
-  type        = string
-  default     = null # Falls back to primary_location
-}
-
-variable "storage_location" {
-  description = "Location for Storage Account (can be different for cost optimization)"
-  type        = string
-  default     = null # Falls back to primary_location
-}
-
-variable "sql_location" {
-  description = "Location for Azure SQL Server"
-  type        = string
-  default     = null # Falls back to primary_location
+  default     = null
 }
 
 variable "keyvault_location" {
   description = "Location for Key Vault"
   type        = string
-  default     = null # Falls back to primary_location
+  default     = null
 }
 
 variable "tags" {
   description = "Common tags"
   type        = map(string)
   default = {
-    Project     = "Gencolink"
+    Project     = "Jencolink"
     Environment = "Production"
     ManagedBy   = "Terraform"
   }
 }
 
-# ============================================================
-# DIRECTUS CONFIGURATION
-# ============================================================
-variable "directus_admin_email" {
-  description = "Directus admin email"
-  type        = string
-}
-
-# directus_admin_password / directus_admin_token / directus_jwt_secret are no
-# longer input variables — main.tf generates them with random_password and
-# writes them to Key Vault + GitHub Secrets, so there's one source of truth.
-
-# ============================================================
-# ADDITIONAL VARIABLES (for terraform.tfvars compatibility)
-# ============================================================
-variable "contact_recipient_email" {
-  description = "Email to receive contact form submissions"
+variable "github_actions_client_id" {
+  description = "Application (client) ID of the GitHub Actions OIDC app (the same value as the AZURE_CLIENT_ID GitHub secret). When set, Terraform grants that app Key Vault Secrets User so the website workflow can read secrets. Leave empty to assign the role yourself."
   type        = string
   default     = ""
-}
-
-variable "from_email_address" {
-  description = "From email address for notifications"
-  type        = string
-  default     = "noreply@gencolink.com"
 }
 
 variable "github_repo_token" {
   description = "GitHub PAT token (needs repo scope to manage Actions secrets)"
   type        = string
   sensitive   = true
-  default     = ""
-}
-
-variable "github_repo_url" {
-  description = "GitHub repository URL"
-  type        = string
   default     = ""
 }
 
@@ -123,73 +66,5 @@ variable "github_owner" {
 variable "github_repository" {
   description = "GitHub repository name (no owner prefix)"
   type        = string
-  default     = "gencolink"
+  default     = "jencolink"
 }
-
-variable "github_branch" {
-  description = "GitHub branch to deploy"
-  type        = string
-  default     = "master"
-}
-
-variable "directus_refresh_token_ttl" {
-  description = "Directus refresh token TTL in days"
-  type        = number
-  default     = 7
-}
-
-
-variable "azure_communication_email_domain" {
-  description = "Azure Communication Services resource endpoint URL, e.g. https://<name>.<region>.communication.azure.com/ (passed to the function as ACS_ENDPOINT for managed-identity auth)"
-  type        = string
-  default     = ""
-}
-
-variable "acs_resource_name" {
-  description = "Name of the Azure Communication Services resource the Function App is granted email-send access on (used to build the RBAC scope). Not a secret."
-  type        = string
-  default     = ""
-}
-
-# ============================================================
-# APP SERVICE DEPLOYMENT (hosts Directus + the Functions app)
-# ============================================================
-variable "enable_app_service" {
-  description = "Deploy Directus + Functions to App Service. The Function App and the Directus bootstrap depend on this; there is no other hosting path, so this is effectively always true."
-  type        = bool
-  default     = true
-}
-
-variable "app_service_sku" {
-  description = "App Service Plan SKU. B1 (~$13/mo) is the minimum viable tier for 24/7 production - F1/Free carries hard limits for Directus (cold-start timeout risk, no always-on, no VNet integration, 60 min/day compute quota). The networking strategy is derived from this value automatically: B1+ uses VNet integration + service endpoints, F1/D1 falls back to IP firewall rules."
-  type        = string
-  default     = "B1"
-
-  validation {
-    condition     = can(regex("^(F1|D1|B[1-3]|S[1-3]|P(1|2|3)?v[2-4]|P0v3|I[1-6]v2|EP[1-3]|Y1)$", upper(var.app_service_sku)))
-    error_message = "app_service_sku must be a valid App Service Plan SKU (e.g. F1, B1, S1, P0v3, P1v3)."
-  }
-}
-
-# ============================================================
-# AZURE SQL SERVER CONFIGURATION
-# ============================================================
-variable "sql_admin_username" {
-  description = "SQL Server admin username"
-  type        = string
-  default     = "sqladmin"
-}
-
-variable "sql_admin_password" {
-  description = "SQL Server admin password. Leave empty (default) to let Terraform auto-generate and manage it via random_password.sql_admin_password - only set this to pin a specific password."
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
-variable "sql_database_name" {
-  description = "Azure SQL Database name"
-  type        = string
-  default     = "directus"
-}
-

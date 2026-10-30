@@ -28,9 +28,3 @@ variable "tags" {
   description = "Tags for resources"
   type        = map(string)
 }
-
-variable "functions_principal_id" {
-  description = "Principal ID of Azure Functions for access policy"
-  type        = string
-  default     = null
-}

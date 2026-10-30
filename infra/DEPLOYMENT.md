@@ -1,137 +1,122 @@
-# Deployment Guide
+# Deployment
 
-The single source of truth for deploying Gencolink. (Older `*_GUIDE.md`,
-`*_DELIVERY.md`, `ULTRA_LOW_COST_*`, and `FREE_TIER_*` docs described an
-abandoned Container Apps / PostgreSQL / free-tier design and were removed — see
-git history if you need them.)
+Azure hosts the website and a Key Vault. Sanity hosts the content and the
+editing studio. The contact form posts to Web3Forms from the browser.
 
-## Architecture
+| Piece | Where it runs |
+|-------|----------------|
+| Website | Azure Static Web App |
+| Secrets | Azure Key Vault. You type the three content values. |
+| Content | Sanity content API |
+| Editing UI | Sanity Studio at `https://jencolink.sanity.studio` |
+| Contact | Web3Forms |
+| Terraform state | New empty file `website.tfstate` in storage account `gencolinktfstate` |
 
-| Layer | What runs it | Notes |
-|-------|--------------|-------|
-| **Frontend** | Azure Static Web App | Angular site; config injected at deploy time |
-| **CMS** | Directus on Azure App Service (Linux, container) | Shares one **B1** App Service Plan |
-| **Email function** | Azure Functions (`send-contact-email`) | Same B1 plan; **Managed Identity** auth to ACS (no secret) |
-| **Database** | Azure SQL Server (Basic) | Directus backend |
-| **Storage** | Azure Storage Account | Directus uploads (blob) |
-| **Secrets** | Azure Key Vault | Terraform-generated; nothing hand-typed |
-| **Email delivery** | Azure Communication Services | Managed outside Terraform |
-| **Terraform state** | Azure Storage (`gencolink-rg-tfstate`/`gencolinktfstate`) | Remote, encrypted at rest; AAD auth, no access key |
+`runtime-config.js` is a small file the built site loads before Angular.
+Locally it lives in `Website/public/runtime-config.js`. On deploy, the
+GitHub workflow overwrites the built copy with the Key Vault values.
 
-Flow: contact form → Directus `contact_submissions` → Directus Flow webhook →
-Function → ACS email.
+## What Terraform creates
 
-## Network security (tier-dependent, automatic)
+- One Key Vault.
+- Four secret slots: `sanity-project-id`, `sanity-dataset`, `sanity-auth-token`,
+  `web3forms-access-key`. The first apply stores the word `pending`. Later
+  applies do not change the value.
+- One Static Web App (Free).
+- Four GitHub Actions secrets: `AZURE_RESOURCE_GROUP`, `AZURE_KEY_VAULT_NAME`,
+  `AZURE_SWA_NAME`, `AZURE_SWA_DEPLOYMENT_TOKEN`.
 
-The Storage/SQL firewall strategy is derived from `app_service_sku`:
+Terraform does not create a database, a storage account for the site, or an
+app service. State starts empty. It does not know about resources you
+already deleted, and it will not try to delete or recreate them.
 
-- **B1 and above**: a VNet + delegated subnet is created; Directus and the
-  Function App use regional VNet integration, and Storage/SQL firewalls allow
-  that **subnet** via service endpoints (`Microsoft.Sql`,
-  `Microsoft.Storage.Global`). No IP rules, no dependency on mutable outbound
-  IPs, lockdown active from the first apply.
-- **F1/D1 (Free/Shared)**: VNet integration isn't supported on these tiers, so
-  firewalls fall back to **IP rules** scoped to the App Service's outbound IPs.
+## One-time setup
 
-Both paths deploy in a **single `terraform apply`** — no read-back data
-sources, no multi-phase bootstrap flags.
+1. Resource group `gencolink` already exists. Terraform reads it.
+2. State storage already exists. See git history if you ever need to recreate it.
+3. GitHub OIDC app. See [AZURE_OIDC_SETUP.md](../AZURE_OIDC_SETUP.md).
+   Put these three in GitHub Actions secrets yourself:
+   `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`.
+4. A GitHub PAT with Actions read/write on this repo. Export it as
+   `GITHUB_TOKEN` in the shell you use for Terraform. Do not put it in
+   `terraform.tfvars`.
+5. Copy the example vars and set the GitHub owner plus the OIDC client id:
 
-### Functions hosting is tier-dependent
-
-- **B1+**: the Function App shares Directus's App Service Plan, in the main RG.
-- **F1/D1**: Azure forbids Function Apps on Free/Shared plans, so the Function
-  App runs on its own **Consumption (Y1) plan in a dedicated resource group**
-  (`gencolink-prod-functions-rg`). This is Azure's documented requirement — a
-  resource group that hosts a Free/Shared Linux web-app plan cannot also host a
-  Linux Consumption plan. Consumption is $0 fixed (1M free executions/month).
-
-  ⚠️ **Extra permission on F1/D1**: creating that resource group requires the
-  deploying identity to have rights at the **subscription** scope (e.g.
-  Contributor on the subscription), not just Contributor on the `gencolink` RG.
-  If your identity is scoped only to the RG, either widen it or switch to B1.
-
-## Prerequisites (one-time)
-
-1. **Azure**: an existing resource group named `gencolink`; `az login`; correct
-   subscription selected. Terraform *reads* the RG, it does not create it.
-2. **Terraform state backend**: a one-time bootstrap, deliberately done via
-   Azure CLI rather than Terraform (state storage can't depend on itself):
    ```bash
-   az group create -n gencolink-rg-tfstate -l eastus2
-   az storage account create -n gencolinktfstate -g gencolink-rg-tfstate \
-     --sku Standard_LRS --https-only true --allow-blob-public-access false
-   az storage account blob-service-properties update \
-     --account-name gencolinktfstate -g gencolink-rg-tfstate \
-     --enable-versioning true --enable-delete-retention true --delete-retention-days 7
-   az role assignment create --assignee "$(az ad signed-in-user show --query id -o tsv)" \
-     --role "Storage Blob Data Contributor" \
-     --scope "$(az storage account show -n gencolinktfstate -g gencolink-rg-tfstate --query id -o tsv)"
-   az storage container create --name tfstate --account-name gencolinktfstate --auth-mode login
+   cd infra/terraform
+   cp terraform.tfvars.example terraform.tfvars
    ```
-   Already done for this project. Costs a few cents/month.
-3. **OIDC for GitHub Actions**: an App Registration + federated credential with
-   Contributor on the RG. See [AZURE_OIDC_SETUP.md](../AZURE_OIDC_SETUP.md).
-   Add these three as **GitHub repo secrets manually** (Terraform creates all
-   the others): `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`.
-4. **GitHub PAT** for Terraform's `github` provider (fine-grained, this repo,
-   Actions read/write) - a token you generate yourself, distinct from GitHub
-   Actions' own auto-issued `secrets.GITHUB_TOKEN` used inside workflows.
-   Export it as `GITHUB_TOKEN` in the shell you run `terraform apply` from
-   (the provider reads it automatically); don't put it in `terraform.tfvars`.
-5. **Azure Communication Services**: the ACS resource + a verified email domain
-   (DNS records). ACS is *not* managed by Terraform — it must exist first, and
-   its endpoint/resource-name go in `terraform.tfvars`.
-6. **`terraform.tfvars`**: `cp terraform.tfvars.example terraform.tfvars` and
-   fill it in. All real secrets are either Terraform-generated or supplied via
-   env vars; the file itself is gitignored.
 
-## Deploy the infrastructure (manual, local)
+   Set `github_actions_client_id` to the same value as `AZURE_CLIENT_ID`.
+   That grants the workflow permission to read Key Vault. If you leave it
+   empty, assign **Key Vault Secrets User** on the vault to the GitHub app
+   yourself after apply.
+
+## Apply
+
+Use a new `terraform.tfvars` from the example. An older file still lists
+Directus, SQL, and Functions settings, and Terraform will refuse it.
 
 ```bash
 cd infra/terraform
-terraform init
-terraform plan     # review
+cp terraform.tfvars.example terraform.tfvars
+terraform init -reconfigure
+terraform plan
 terraform apply
 ```
 
-`apply` provisions everything above and auto-pushes the resource
-names/URLs/tokens it generates into GitHub Actions secrets. It does **not** run
-`Directus/setup.js` — that now runs in CI (see below), after the Directus
-container is deployed and healthy.
+`terraform init` may ask to copy the old `prod.tfstate`. Answer **no**.
+`-reconfigure` keeps the new `website.tfstate` empty. The plan should only
+create the vault, the three secret slots, the website, and the GitHub secrets.
 
-There is no CI job that runs Terraform — you always run `apply` yourself.
+There is no workflow that runs Terraform. You apply it yourself.
 
-**One-time OIDC grant for the bootstrap job:** the `directus-appservice.yml`
-bootstrap job reads the Directus admin token from Key Vault, which needs a
-data-plane role (Contributor is control-plane only and won't work on an
-RBAC-authorized vault). Grant the GitHub Actions OIDC service principal
-**"Key Vault Secrets User"** on the vault — done manually in the Azure Portal
-(Key Vault → Access control (IAM) → Add role assignment), not by Terraform.
+## Fill the vault
 
-## Deploy the application code (automatic)
+In the Azure portal, open the vault named in `terraform output key_vault_name`
+and set:
 
-Push to `master`. Three path-filtered workflows deploy independently:
+| Secret | Value |
+|--------|--------|
+| `sanity-project-id` | Sanity project id |
+| `sanity-dataset` | `production`, or your dataset name |
+| `sanity-auth-token` | Sanity Developer token. This deploys the Studio. |
+| `web3forms-access-key` | Web3Forms access key |
 
-| Workflow | Fires on changes to |
-|----------|---------------------|
-| `frontend.yml` | `Website/**` |
-| `directus-appservice.yml` | `Directus/**` |
-| `functions.yml` | `functions/**` |
+Do not run apply again expecting it to change these. It will not.
+If the vault was created before `sanity-auth-token` existed, run apply once
+more so that empty slot is created, then set its value.
 
-All three authenticate to Azure with OIDC (no stored publish profiles/keys).
+## Deploy the website
 
-## Secrets model
+Push `Website/` to `master`, or run the **Frontend (Angular)** workflow by
+hand on `master`.
 
-- **Azure**: generated by Terraform (`random_password`) → Key Vault → consumed
-  by the apps. Retrieve one with e.g. `terraform output -raw directus_admin_password`.
-- **GitHub Actions**: mostly auto-synced by Terraform; only the 3 OIDC ones are
-  manual (step 2 above).
-- **Local dev**: `Directus/.env`, `functions/local.settings.json`,
-  `infra/terraform/terraform.tfvars` — all gitignored, independent of Azure.
+The workflow builds the Angular app, logs in to Azure with OIDC, reads the
+three secrets, writes `runtime-config.js`, and uploads the site to the
+Static Web App. A pull request only builds. It does not read the vault and
+does not deploy.
 
-## What is still manual
+The workflow stops if `sanity-project-id` or `web3forms-access-key` is still
+`pending`. An empty or `pending` dataset becomes `production`.
 
-- `terraform apply` itself.
-- The one-time OIDC setup + 3 GitHub secrets, ACS resource + domain
-  verification, and filling `terraform.tfvars`.
-- Custom-domain DNS, if you point a domain at the Static Web App / App Service.
+## Deploy the editor
+
+Push `studio/` to `master`, or run the **Studio (Sanity)** workflow by hand
+on `master`.
+
+The workflow logs in to Azure, reads `sanity-auth-token` from Key Vault, and
+runs `npm run deploy`. Sanity hosts the editor at
+`https://jencolink.sanity.studio`. It is not part of the Static Web App.
+
+A pull request only builds the Studio. It does not deploy. The workflow stops
+if `sanity-auth-token` or `sanity-project-id` is still `pending`.
+
+In Sanity manage, allow CORS for `http://localhost:4200` and for the live site URL.
+
+## Still done by hand
+
+- `terraform apply`
+- The three OIDC GitHub secrets
+- The four Key Vault values, including the Sanity Developer token
+- A custom domain, if you add one later

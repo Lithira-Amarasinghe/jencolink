@@ -1,7 +1,7 @@
-// Runtime configuration — injected during CI/CD deployment
-// For local dev: edit this manually
-// For production: injected via CI/CD pipeline
+// Runtime configuration. Local values live here.
+// Production overwrites the built copy from Azure Key Vault during deploy.
 
-window.__DIRECTUS_URL__ = window.__DIRECTUS_URL__ || 'http://localhost:8055';
-window.__API_TIMEOUT__ = 30000;
-window.__APP_ENV__ = 'production';
+window.__SANITY_PROJECT_ID__ = window.__SANITY_PROJECT_ID__ || '';
+window.__SANITY_DATASET__ = window.__SANITY_DATASET__ || 'production';
+window.__WEB3FORMS_ACCESS_KEY__ = window.__WEB3FORMS_ACCESS_KEY__ || '';
+window.__APP_ENV__ = 'development';
