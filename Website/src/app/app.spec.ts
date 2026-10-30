@@ -18,11 +18,11 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render Gencolink hero', () => {
+  it('should render Jencolink hero', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Building software that powers a');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Jencolink');
   });
 
   // Regression test. Rows are hidden by GSAP's from-state until their
@@ -65,8 +65,7 @@ describe('App', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    // Real service panels (excluding the trailing CTA panel).
-    const panels = compiled.querySelectorAll('.panel:not(.panel--cta):not(.panel--skeleton)');
-    expect(panels.length).toBeGreaterThan(0);
+    const rows = compiled.querySelectorAll('.service-row:not(.service-row--skeleton)');
+    expect(rows.length).toBeGreaterThan(0);
   });
 });

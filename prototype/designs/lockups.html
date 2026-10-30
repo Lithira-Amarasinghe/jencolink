@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Jencolink lockups</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #05091c;
+        --ink: #0b1330;
+        --paper: #f6f8fd;
+        --hi: #ffffff;
+        --body: #c5d2e6;
+        --accent: #2ec5ff;
+        --signal: #0f80cb;
+        --display: "Archivo", ui-sans-serif, sans-serif;
+        --sans: "Hanken Grotesk", ui-sans-serif, sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, monospace;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; width: 1440px; background: #000; }
+      a { color: inherit; text-decoration: none; }
+      img { display: block; }
+
+      .frame {
+        position: relative;
+        width: 1440px;
+        height: 900px;
+        overflow: hidden;
+      }
+
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        height: 80px;
+        padding: 0 48px;
+      }
+
+      .lock {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--display);
+        font-weight: 700;
+        font-stretch: 112%;
+        font-size: 22px;
+        letter-spacing: -0.03em;
+      }
+
+      .lock img { width: 36px; height: auto; }
+
+      .nav {
+        display: flex;
+        gap: 2px;
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.03em;
+      }
+
+      .nav span { padding: 8px 13px; }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        padding: 12px 18px;
+        font-family: var(--sans);
+        font-size: 14px;
+        font-weight: 650;
+      }
+
+      .vision {
+        margin: 0;
+        font-family: var(--sans);
+        font-weight: 500;
+        font-size: 22px;
+        line-height: 1.35;
+        text-wrap: balance;
+      }
+
+      .practices {
+        display: flex;
+        gap: 22px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .word {
+        margin: 0;
+        font-family: var(--display);
+        font-weight: 750;
+        font-stretch: 112%;
+        letter-spacing: -0.045em;
+        line-height: 0.9;
+      }
+
+      /* 1. Pair — one horizontal lockup */
+      .pair {
+        background:
+          radial-gradient(rgba(185, 197, 222, 0.28) 1px, transparent 1.15px) 0 0 / 28px 28px,
+          var(--bg);
+        color: var(--hi);
+      }
+      .pair .cta { background: #eef3fb; color: var(--ink); }
+      .pair .nav { color: #d5deef; }
+
+      .pair-stage {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 820px;
+        padding-bottom: 24px;
+      }
+
+      .pair-lock {
+        display: flex;
+        align-items: center;
+        gap: 36px;
+      }
+
+      .pair-lock img { width: 210px; height: auto; }
+      .pair-lock .word { font-size: 112px; }
+
+      .pair .vision {
+        margin-top: 36px;
+        max-width: 28ch;
+        text-align: center;
+        color: var(--body);
+      }
+
+      .pair .practices {
+        margin-top: 28px;
+        color: #9aabc8;
+      }
+      .pair .practices .on { color: var(--accent); }
+
+      /* 2. Crest — mark stacked on the name */
+      .crest { background: var(--paper); color: var(--ink); }
+      .crest .nav { color: #243156; }
+      .crest .cta { background: var(--ink); color: #fff; }
+
+      .crest-stage {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 820px;
+        padding-bottom: 10px;
+      }
+
+      .crest-lock {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+      }
+
+      .crest-lock img { width: 420px; height: auto; }
+      .crest-lock .word { font-size: 84px; }
+
+      .crest .vision {
+        margin-top: 28px;
+        max-width: 34ch;
+        text-align: center;
+        color: #3c4b68;
+        font-size: 20px;
+      }
+
+      .crest .practices {
+        margin-top: 26px;
+        color: var(--signal);
+      }
+
+      /* 3. Split — half mark, half name */
+      .split { display: grid; grid-template-columns: 1fr 1fr; background: var(--paper); }
+
+      .split-mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background:
+          radial-gradient(520px 420px at 50% 50%, rgba(46, 197, 255, 0.14), transparent 70%),
+          #05091c;
+      }
+
+      .split-mark img { width: 440px; height: auto; }
+
+      .split-copy {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 108px 72px 72px;
+        color: var(--ink);
+      }
+
+      .split-nav {
+        position: absolute;
+        top: 28px;
+        right: 36px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #243156;
+      }
+
+      .split-copy .word { font-size: 92px; max-width: 7ch; }
+      .split .vision {
+        margin-top: 22px;
+        max-width: 22ch;
+        color: #3c4b68;
+        font-size: 20px;
+      }
+      .split .cta {
+        margin-top: 32px;
+        align-self: flex-start;
+        background: var(--ink);
+        color: #fff;
+      }
+
+      /* 4. Anchor — large mark left, name owns the right */
+      .anchor {
+        background:
+          radial-gradient(640px 480px at 22% 55%, rgba(46, 197, 255, 0.12), transparent 70%),
+          var(--bg);
+        color: var(--hi);
+      }
+      .anchor .nav { color: #d5deef; }
+      .anchor .cta { background: #eef3fb; color: var(--ink); }
+
+      .anchor-stage {
+        display: flex;
+        align-items: center;
+        height: 820px;
+        padding: 0 88px 20px 96px;
+        gap: 72px;
+      }
+
+      .anchor-stage > img { width: 340px; height: auto; flex: none; }
+
+      .anchor .word { font-size: 104px; }
+      .anchor .vision {
+        margin-top: 18px;
+        max-width: 22ch;
+        color: var(--body);
+        font-size: 22px;
+      }
+      .anchor .practices { margin-top: 28px; color: #9aabc8; }
+      .anchor .practices .on { color: var(--accent); }
+
+      /* 5. Nameplate — lockup isolated in a band */
+      .plate {
+        background: var(--bg);
+        color: var(--hi);
+      }
+      .plate .nav { color: #d5deef; }
+      .plate .cta { background: #eef3fb; color: var(--ink); }
+
+      .plate-kicker {
+        position: absolute;
+        top: 140px;
+        left: 0;
+        right: 0;
+        margin: 0;
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .nameplate {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 214px;
+        height: 360px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 48px;
+        background: #0c1430;
+        box-shadow:
+          inset 0 1px 0 rgba(238, 243, 251, 0.1),
+          inset 0 -1px 0 rgba(238, 243, 251, 0.1);
+      }
+
+      .nameplate img { width: 260px; height: auto; }
+      .nameplate .word { font-size: 120px; }
+
+      .plate .vision {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 620px;
+        text-align: center;
+        color: var(--body);
+      }
+
+      .plate .practices {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 56px;
+        justify-content: center;
+        color: #9aabc8;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="frame pair">
+      <header class="bar">
+        <a class="lock" href="#"><img src="../assets/logo-for-dark.png" alt="" />Jencolink</a>
+        <nav class="nav"><span>Services</span><span>Why us</span><span>FAQ</span><span>Contact</span></nav>
+        <a class="cta" href="#">Let's Talk</a>
+      </header>
+      <div class="pair-stage">
+        <div class="pair-lock">
+          <img src="../assets/logo-for-dark.png" alt="" />
+          <p class="word">Jencolink</p>
+        </div>
+        <p class="vision">A better and more joyous future through the power of computing.</p>
+        <ul class="practices">
+          <li>Web Apps</li>
+          <li class="on">Cloud Solutions</li>
+          <li>Digital Automations</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="frame crest">
+      <header class="bar">
+        <a class="lock" href="#"><img src="../assets/logo-for-light.png" alt="" />Jencolink</a>
+        <nav class="nav"><span>Services</span><span>Why us</span><span>FAQ</span><span>Contact</span></nav>
+        <a class="cta" href="#">Let's Talk</a>
+      </header>
+      <div class="crest-stage">
+        <div class="crest-lock">
+          <img src="../assets/logo-for-light.png" alt="" />
+          <p class="word">Jencolink</p>
+        </div>
+        <p class="vision">A better and more joyous future through the power of computing.</p>
+        <ul class="practices">
+          <li>Web Apps</li>
+          <li>Cloud Solutions</li>
+          <li>Digital Automations</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="frame split">
+      <div class="split-mark">
+        <img src="../assets/logo-for-dark.png" alt="" />
+      </div>
+      <div class="split-copy">
+        <div class="split-nav">
+          <nav class="nav"><span>Services</span><span>Why us</span><span>FAQ</span><span>Contact</span></nav>
+          <a class="cta" href="#">Let's Talk</a>
+        </div>
+        <p class="word">Jencolink</p>
+        <p class="vision">A better and more joyous future through the power of computing.</p>
+      </div>
+    </section>
+
+    <section class="frame anchor">
+      <header class="bar">
+        <a class="lock" href="#"><img src="../assets/logo-for-dark.png" alt="" />Jencolink</a>
+        <nav class="nav"><span>Services</span><span>Why us</span><span>FAQ</span><span>Contact</span></nav>
+        <a class="cta" href="#">Let's Talk</a>
+      </header>
+      <div class="anchor-stage">
+        <img src="../assets/logo-for-dark.png" alt="" />
+        <div>
+          <p class="word">Jencolink</p>
+          <p class="vision">A better and more joyous future through the power of computing.</p>
+          <ul class="practices">
+            <li>Web Apps</li>
+            <li class="on">Cloud Solutions</li>
+            <li>Digital Automations</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="frame plate">
+      <header class="bar">
+        <a class="lock" href="#"><img src="../assets/logo-for-dark.png" alt="" />Jencolink</a>
+        <nav class="nav"><span>Services</span><span>Why us</span><span>FAQ</span><span>Contact</span></nav>
+        <a class="cta" href="#">Let's Talk</a>
+      </header>
+      <p class="plate-kicker">Software engineering studio</p>
+      <div class="nameplate">
+        <img src="../assets/logo-for-dark.png" alt="" />
+        <p class="word">Jencolink</p>
+      </div>
+      <p class="vision">A better and more joyous future through the power of computing.</p>
+      <ul class="practices">
+        <li>Web Apps</li>
+        <li>Cloud Solutions</li>
+        <li>Digital Automations</li>
+      </ul>
+    </section>
+  </body>
+</html>

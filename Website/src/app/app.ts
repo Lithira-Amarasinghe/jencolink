@@ -30,6 +30,7 @@ import {
 import { SiteContentService } from './site-content.service';
 import { ThemeService } from './theme.service';
 import { HeroComponent } from './hero/hero.component';
+import { LogoMarkComponent } from './logo-mark.component';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -37,6 +38,7 @@ gsap.registerPlugin(ScrollTrigger);
   selector: 'app-root',
   imports: [
     HeroComponent,
+    LogoMarkComponent,
     ReactiveFormsModule,
     LucideArrowRight,
     LucideBuilding2,
@@ -100,7 +102,8 @@ export class App implements AfterViewInit, OnDestroy {
    */
   private motionContext?: gsap.Context;
   private headerTrigger?: ScrollTrigger;
-  private magnetic: { el: HTMLElement; onMove: (e: PointerEvent) => void; onLeave: () => void }[] = [];
+  private magnetic: { el: HTMLElement; onMove: (e: PointerEvent) => void; onLeave: () => void }[] =
+    [];
   private resizeTimer?: ReturnType<typeof setTimeout>;
   private onResize = (): void => {
     clearTimeout(this.resizeTimer);
@@ -170,7 +173,6 @@ export class App implements AfterViewInit, OnDestroy {
       }
 
       this.motionContext = gsap.context(() => {
-
         // Aurora orbs drift on scroll (scrubbed parallax) with GPU acceleration.
         gsap.utils.toArray<HTMLElement>('[data-parallax]').forEach((el) => {
           const strength = Number(el.dataset['parallax'] ?? 10);
@@ -262,7 +264,12 @@ export class App implements AfterViewInit, OnDestroy {
           yPercent: 40,
           ease: 'none',
           force3D: true,
-          scrollTrigger: { trigger: '.site-footer', start: 'top bottom', end: 'bottom bottom', scrub: 0.2 },
+          scrollTrigger: {
+            trigger: '.site-footer',
+            start: 'top bottom',
+            end: 'bottom bottom',
+            scrub: 0.2,
+          },
         });
 
         // Header progress hairline tracks overall page position with GPU acceleration.
@@ -316,6 +323,11 @@ export class App implements AfterViewInit, OnDestroy {
   scrollTo(target: string): void {
     document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     this.menuOpen.set(false);
+  }
+
+  scrollHome(event: Event): void {
+    event.preventDefault();
+    this.scrollTo('top');
   }
 
   toggleMenu(): void {

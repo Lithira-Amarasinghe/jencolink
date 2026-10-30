@@ -93,20 +93,6 @@
   text-decoration: none;
 }
 
-.brand-mark {
-  position: relative;
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--accent-2);
-}
-
-.brand-mark::after {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  background: var(--accent);
-}
-
 .desktop-nav {
   display: flex;
   gap: 4px;
@@ -416,7 +402,7 @@
 }
 
 .service-row::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background: color-mix(in srgb, var(--accent) 7%, transparent);
@@ -486,8 +472,6 @@
   line-height: 1.6;
   color: var(--text-body);
 }
-
-
 
 /* ============================================================
    WHY — raised contrast panel (theme-matched, not a light flip)
@@ -594,7 +578,7 @@
 
 .value-node::before,
 .value-node::after {
-  content: "";
+  content: '';
   position: absolute;
   background: var(--invert-accent);
   transition: transform 400ms var(--ease-out-quint);
@@ -750,7 +734,7 @@
 
 .faq-marker::before,
 .faq-marker::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1000,9 +984,9 @@
   justify-content: center;
   gap: 12px;
   align-self: flex-start;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
+  border: 1px solid var(--btn-bg);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
   padding: 16px 32px;
   font-family: var(--font-body);
   font-size: 15.5px;
@@ -1307,7 +1291,7 @@
 }
 
 .value-item--skeleton::before {
-  content: "";
+  content: '';
   display: block;
   width: 14px;
   height: 14px;

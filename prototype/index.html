@@ -1,0 +1,578 @@
+<!doctype html>
+<!-- Jencolink UI prototype. Open this folder with any static server:
+     python3 -m http.server -d prototype
+     The contact form is local only — it does not email anyone. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jencolink — Software Engineering Studio</title>
+    <meta
+      name="description"
+      content="Jencolink designs, builds, and scales intelligent software: custom web applications, business management systems, eCommerce, and automation — engineered with care."
+    />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#10063F" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f4fa" />
+    <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="prototype.css" />
+    <script>
+      (function () {
+        try {
+          var theme =
+            localStorage.getItem("jencolink-prototype-theme") ||
+            localStorage.getItem("gencolink-prototype-theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+          if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            document.documentElement.classList.add("js-reveal");
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <svg class="logo-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="logo" viewBox="0 0 346 320">
+        <g transform="translate(0 320) scale(1 -1)">
+          <path
+            fill="currentColor"
+            d="M235 313 c-12 -3 -18 -6 -27 -11 -14 -10 -23 -18 -30 -32 -3 -7 -8 -18 -8 -21 0 0 4 -1 9 -1 7 -1 15 -3 24 -6 1 0 2 0 2 1 0 3 7 14 12 20 6 7 12 11 21 14 34 11 68 -14 68 -51 0 -6 -3 -19 -7 -25 -4 -6 -14 -16 -20 -19 -7 -4 -15 -6 -20 -6 l-3 0 0 -5 c1 -3 1 -11 1 -18 l0 -13 7 0 c12 2 19 4 28 9 11 5 19 11 26 19 9 9 15 19 19 32 6 17 5 39 -1 57 -9 27 -30 46 -58 55 -10 3 -33 4 -43 1z M160 240 c-25 -5 -44 -20 -55 -42 -8 -16 -8 -20 -9 -58 0 -37 0 -44 3 -48 8 -11 24 -10 30 1 l3 5 0 38 c0 23 1 39 2 41 4 10 11 19 22 24 6 3 7 4 17 4 10 0 11 -1 17 -4 8 -3 13 -8 18 -15 6 -10 6 -12 7 -54 0 -36 1 -38 3 -41 7 -10 24 -9 30 2 1 3 2 7 2 35 0 37 -1 49 -5 61 -12 36 -49 57 -85 51z M76 180 c-42 -8 -71 -43 -71 -85 0 -28 13 -54 36 -71 8 -6 23 -13 34 -16 35 -9 75 5 96 34 8 9 13 20 17 32 l2 9 1 41 c0 28 0 42 -1 44 -1 5 -5 10 -9 12 -6 3 -17 1 -21 -5 -5 -5 -5 -7 -5 -48 0 -24 0 -40 -1 -42 -6 -22 -22 -37 -44 -43 -8 -1 -22 -1 -29 1 -13 4 -26 14 -33 25 -12 19 -10 44 5 60 8 9 20 16 31 17 l5 1 0 15 c1 8 1 16 2 18 l0 3 -4 0 c-3 0 -7 -1 -11 -2z"
+          />
+        </g>
+      </symbol>
+    </svg>
+    <header class="site-header">
+      <span class="scroll-progress" aria-hidden="true"></span>
+      <a class="brand" href="#top" aria-label="Jencolink home">
+        <svg class="brand-logo" viewBox="0 0 346 320" aria-hidden="true">
+          <use href="#logo" />
+        </svg>
+        Jencolink
+      </a>
+
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <button type="button" data-scroll="services">Services</button>
+        <button type="button" data-scroll="why">Why us</button>
+        <button type="button" data-scroll="faq">FAQ</button>
+        <button type="button" data-scroll="contact">Contact</button>
+      </nav>
+
+      <button
+        class="theme-toggle"
+        type="button"
+        aria-label="Switch to light mode"
+        aria-pressed="false"
+      >
+        <span class="theme-toggle-track" aria-hidden="true">
+          <span class="theme-toggle-thumb">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+            </svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+            </svg>
+          </span>
+        </span>
+      </button>
+
+      <button class="nav-cta magnetic" type="button" data-scroll="contact">
+        <span>Let's Talk</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </button>
+
+      <button class="menu-button" type="button" aria-label="Open navigation menu" aria-expanded="false">
+        <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </header>
+
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <button type="button" data-scroll="services" style="--i: 0">
+        <span class="mobile-nav-index" aria-hidden="true">01</span>
+        Services
+      </button>
+      <button type="button" data-scroll="why" style="--i: 1">
+        <span class="mobile-nav-index" aria-hidden="true">02</span>
+        Why us
+      </button>
+      <button type="button" data-scroll="faq" style="--i: 2">
+        <span class="mobile-nav-index" aria-hidden="true">03</span>
+        FAQ
+      </button>
+      <button type="button" data-scroll="contact" style="--i: 3">
+        <span class="mobile-nav-index" aria-hidden="true">04</span>
+        Contact
+      </button>
+    </nav>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-aurora" aria-hidden="true">
+          <span class="hero-aurora-wash" data-wash="0"></span>
+          <span class="hero-aurora-wash" data-wash="1"></span>
+          <span class="hero-aurora-wash" data-wash="2"></span>
+          <span class="hero-aurora-wash hero-aurora-wash--follow" data-wash="follow"></span>
+        </div>
+        <div class="hero-split">
+          <div class="hero-copy">
+            <h1 id="hero-title" class="hero-word" aria-label="Jencolink">
+              <span class="hero-letters" aria-hidden="true"><span class="hero-letter" style="--i: 0">J</span><span class="hero-letter" style="--i: 1">e</span><span class="hero-letter" style="--i: 2">n</span><span class="hero-letter" style="--i: 3">c</span><span class="hero-letter" style="--i: 4">o</span><span class="hero-letter" style="--i: 5">l</span><span class="hero-letter" style="--i: 6">i</span><span class="hero-letter" style="--i: 7">n</span><span class="hero-letter" style="--i: 8">k</span></span>
+            </h1>
+            <p class="hero-mission">
+              <span class="mission-word" style="--i: 0">A</span>
+              <span class="mission-word" style="--i: 1">better</span>
+              <span class="mission-word" style="--i: 2">and</span>
+              <span class="mission-word" style="--i: 3">more</span>
+              <span class="mission-word" style="--i: 4">joyous</span>
+              <span class="mission-word" style="--i: 5">future</span>
+              <span class="mission-word" style="--i: 6">through</span>
+              <span class="mission-word" style="--i: 7">the</span>
+              <span class="mission-word" style="--i: 8">power</span>
+              <span class="mission-word" style="--i: 9">of</span>
+              <span class="mission-word" style="--i: 10">computing.</span>
+            </p>
+            <div class="hero-tags" role="radiogroup" aria-label="Practices">
+              <button
+                type="button"
+                role="radio"
+                aria-checked="false"
+                data-lane="web"
+                data-copy="Websites, portals, and custom web applications, built to stay maintainable."
+                style="--i: 0"
+              >
+                Web Apps
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked="false"
+                data-lane="cloud"
+                data-copy="Systems engineered to stay reliable as the business grows."
+                style="--i: 1"
+              >
+                Cloud Solutions
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked="false"
+                data-lane="flow"
+                data-copy="Workflows that remove the manual steps from daily operations."
+                style="--i: 2"
+              >
+                Digital Automations
+              </button>
+            </div>
+            <div class="hero-note-wrap" data-open="false">
+              <p class="hero-note" id="hero-signal" aria-live="polite"></p>
+            </div>
+            <button type="button" class="hero-more" data-scroll="services" hidden>See these services</button>
+          </div>
+          <button type="button" class="hero-emblem" aria-label="Play the Jencolink mark again">
+            <span class="hero-emblem-in">
+              <span class="hero-emblem-shift">
+                <svg class="hero-emblem-img brand-logo" viewBox="0 0 346 320" aria-hidden="true">
+                  <use href="#logo" />
+                </svg>
+              </span>
+            </span>
+            <span class="hero-drag-hint">Drag to tilt</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="services" class="services-section" aria-labelledby="services-title">
+        <div class="section-shell">
+          <div class="services-head">
+            <div class="rule-label">
+              <span class="rule-label-text">Our Services</span>
+              <span class="rule-label-line" aria-hidden="true"></span>
+            </div>
+            <div class="services-head-grid">
+              <h2 id="services-title">End-to-end engineering for modern businesses</h2>
+              <p class="services-head-desc">
+                From strategy to scale, we help you build, integrate, and operate software that drives impact.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="service-filter" hidden>
+          <p>Showing <strong data-filter-label></strong></p>
+          <button type="button" data-filter-clear>Show all</button>
+        </div>
+        <div class="service-list" aria-label="Jencolink service catalog">
+          <article class="service-row" data-lane="web" data-more="Sites and products people come back to, structured so your team can keep changing them.">
+            <div class="service-row-inner">
+              <span class="service-index" aria-hidden="true">01</span>
+              <div class="service-row-copy">
+                <h3 class="service-title">Web Design and Development</h3>
+                <p class="service-body">Professional websites, landing pages, custom web apps, and ongoing maintenance.</p>
+              </div>
+            </div>
+          </article>
+          <article class="service-row" data-lane="web" data-more="Storefronts that stay reliable through checkout, stock, and the marketplaces you already sell on.">
+            <div class="service-row-inner">
+              <span class="service-index" aria-hidden="true">02</span>
+              <div class="service-row-copy">
+                <h3 class="service-title">eCommerce Solutions</h3>
+                <p class="service-body">Online stores and commerce operations with payments, inventory, and marketplace support.</p>
+              </div>
+            </div>
+          </article>
+          <article class="service-row" data-lane="flow" data-more="The repeated steps between people and systems, taken out of the ordinary day.">
+            <div class="service-row-inner">
+              <span class="service-index" aria-hidden="true">03</span>
+              <div class="service-row-copy">
+                <h3 class="service-title">Business Process Automation</h3>
+                <p class="service-body">Automation tools that reduce manual work and make approvals, CRM, and reporting easier.</p>
+              </div>
+            </div>
+          </article>
+          <article class="service-row" data-lane="cloud" data-more="One picture of stock and sales, from the counter to every branch.">
+            <div class="service-row-inner">
+              <span class="service-index" aria-hidden="true">04</span>
+              <div class="service-row-copy">
+                <h3 class="service-title">Retail Management Systems</h3>
+                <p class="service-body">Retail platforms for point of sale, stock control, purchasing, and branch operations.</p>
+              </div>
+            </div>
+          </article>
+          <article class="service-row" data-lane="cloud" data-more="Orders, tables, and the kitchen working from the same system.">
+            <div class="service-row-inner">
+              <span class="service-index" aria-hidden="true">05</span>
+              <div class="service-row-copy">
+                <h3 class="service-title">Restaurant Management Systems</h3>
+                <p class="service-body">Restaurant operations software for POS, reservations, orders, billing, and kitchen workflows.</p>
+              </div>
+            </div>
+          </article>
+          <article class="service-row" data-lane="cloud" data-more="Suppliers, warehouses, and purchasing connected, instead of reconciled by hand.">
+            <div class="service-row-inner">
+              <span class="service-index" aria-hidden="true">06</span>
+              <div class="service-row-copy">
+                <h3 class="service-title">Supply Chain Management Solutions</h3>
+                <p class="service-body">Supply chain tools for suppliers, warehouses, procurement, and connected operations.</p>
+              </div>
+            </div>
+          </article>
+          <article class="service-row" data-lane="cloud" data-more="Bookings, packages, and guest handling kept in one place.">
+            <div class="service-row-inner">
+              <span class="service-index" aria-hidden="true">07</span>
+              <div class="service-row-copy">
+                <h3 class="service-title">Hotel and Tourism Solutions</h3>
+                <p class="service-body">Digital systems for hotels, travel agencies, bookings, tour packages, and guest handling.</p>
+              </div>
+            </div>
+          </article>
+          <article class="service-row" data-lane="cloud" data-more="Appointments, records, and the front desk working from the same source.">
+            <div class="service-row-inner">
+              <span class="service-index" aria-hidden="true">08</span>
+              <div class="service-row-copy">
+                <h3 class="service-title">Healthcare and Fitness Solutions</h3>
+                <p class="service-body">Clinic, pharmacy, appointment, patient record, and gym management systems.</p>
+              </div>
+            </div>
+          </article>
+          <article class="service-row" data-lane="web" data-more="Classes, exams, and the institution's day kept on one platform.">
+            <div class="service-row-inner">
+              <span class="service-index" aria-hidden="true">09</span>
+              <div class="service-row-copy">
+                <h3 class="service-title">Education Technology Solutions</h3>
+                <p class="service-body">Learning and school management platforms for institutions, exams, and e-learning.</p>
+              </div>
+            </div>
+          </article>
+          <article class="service-row" data-lane="web" data-more="Software shaped around the operation, from the first API to the product people use.">
+            <div class="service-row-inner">
+              <span class="service-index" aria-hidden="true">10</span>
+              <div class="service-row-copy">
+                <h3 class="service-title">Custom Software Development</h3>
+                <p class="service-body">Tailor-made software, SaaS products, APIs, and enterprise-grade web or mobile applications.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="why" class="why-section" aria-labelledby="why-title">
+        <div class="section-shell why-layout">
+          <div class="why-intro">
+            <div class="why-intro-sticky">
+              <p class="why-tag">Why Choose Jencolink</p>
+              <h2 id="why-title">A reliable partner for building modern software</h2>
+              <p class="why-lead">
+                At Jencolink, we believe successful software is built on clear communication, thoughtful engineering, and a genuine understanding of your goals. We focus on delivering practical, scalable solutions while building long-term relationships based on trust and collaboration.
+              </p>
+            </div>
+          </div>
+          <ul class="value-list">
+            <li class="value-item">
+              <span class="value-node" aria-hidden="true"></span>
+              <div>
+                <h3>Tailored Solutions</h3>
+                <p>Every business is different. We take the time to understand your requirements and build solutions that align with your goals, processes, and future growth.</p>
+              </div>
+            </li>
+            <li class="value-item">
+              <span class="value-node" aria-hidden="true"></span>
+              <div>
+                <h3>Quality Engineering</h3>
+                <p>We follow modern development practices to create software that is secure, maintainable, and built with long-term reliability in mind.</p>
+              </div>
+            </li>
+            <li class="value-item">
+              <span class="value-node" aria-hidden="true"></span>
+              <div>
+                <h3>Built to Scale</h3>
+                <p>Our solutions are designed with flexibility and scalability, making it easier to adapt and grow as your business evolves.</p>
+              </div>
+            </li>
+            <li class="value-item">
+              <span class="value-node" aria-hidden="true"></span>
+              <div>
+                <h3>Transparent Collaboration</h3>
+                <p>We believe great results come from working together. Throughout every stage of the project, we keep communication open, provide regular updates, and value your feedback.</p>
+              </div>
+            </li>
+            <li class="value-item">
+              <span class="value-node" aria-hidden="true"></span>
+              <div>
+                <h3>Ongoing Support</h3>
+                <p>Our commitment doesn't end at launch. We provide maintenance, improvements, and technical support to help keep your software running smoothly.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="faq" class="faq-section" aria-labelledby="faq-title">
+        <div class="section-shell faq-layout">
+          <div class="faq-head">
+            <h2 id="faq-title">Everything you might want to know</h2>
+            <p class="faq-tag">Frequently Asked Questions</p>
+            <p class="faq-aside">
+              Can't find your answer?
+              <button type="button" class="text-link" data-scroll="contact">
+                Talk to us
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </button>
+            </p>
+          </div>
+          <div class="faq-list">
+            <details class="faq-item" name="faq">
+              <summary>
+                <span class="faq-question">Do you work with startups and small businesses?</span>
+                <span class="faq-marker" aria-hidden="true"></span>
+              </summary>
+              <div class="faq-answer">
+                <p>Yes. We enjoy working with startups, entrepreneurs, and growing businesses to transform ideas into practical digital solutions.</p>
+              </div>
+            </details>
+            <details class="faq-item" name="faq">
+              <summary>
+                <span class="faq-question">Can you build software tailored to our business?</span>
+                <span class="faq-marker" aria-hidden="true"></span>
+              </summary>
+              <div class="faq-answer">
+                <p>Absolutely. Every solution we build is designed around your unique requirements, workflows, and business objectives.</p>
+              </div>
+            </details>
+            <details class="faq-item" name="faq">
+              <summary>
+                <span class="faq-question">Do you provide website maintenance and support?</span>
+                <span class="faq-marker" aria-hidden="true"></span>
+              </summary>
+              <div class="faq-answer">
+                <p>Yes. We offer ongoing maintenance, security updates, performance improvements, and technical support for websites and web applications.</p>
+              </div>
+            </details>
+            <details class="faq-item" name="faq">
+              <summary>
+                <span class="faq-question">Can you improve an existing application or website?</span>
+                <span class="faq-marker" aria-hidden="true"></span>
+              </summary>
+              <div class="faq-answer">
+                <p>Yes. We can enhance existing systems by adding new features, improving performance, modernizing the user experience, or resolving technical issues.</p>
+              </div>
+            </details>
+            <details class="faq-item" name="faq">
+              <summary>
+                <span class="faq-question">What happens after the project is completed?</span>
+                <span class="faq-marker" aria-hidden="true"></span>
+              </summary>
+              <div class="faq-answer">
+                <p>We're happy to continue supporting your software with maintenance, enhancements, and technical guidance whenever you need us.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="contact-section" aria-labelledby="contact-title">
+        <div class="contact-field" aria-hidden="true"></div>
+        <div class="section-shell contact-layout">
+          <div class="contact-copy">
+            <div class="rule-label">
+              <span class="rule-label-text">Let's Connect</span>
+              <span class="rule-label-line" aria-hidden="true"></span>
+            </div>
+            <h2 id="contact-title">Let's build something great together</h2>
+            <p class="contact-desc">
+              Whether you're starting a new project, exploring an idea, or looking to improve an existing system, we'd love to hear from you. Share your goals with us, and we'll get back to you within one business day.
+            </p>
+            <div class="contact-direct">
+              <a class="contact-direct-link" href="mailto:hello@jencolink.com">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect width="20" height="16" x="2" y="4" rx="2" />
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                </svg>
+                hello@jencolink.com
+              </a>
+              <a class="contact-direct-link" href="tel:+94714280380">+94 71 4 280 380</a>
+              <a class="contact-direct-link" href="tel:+94775690380">+94 77 5 690 380</a>
+            </div>
+          </div>
+
+          <form novalidate>
+            <div class="field-grid">
+              <label>
+                <span>Full name</span>
+                <span class="field-input">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  <input type="text" name="name" autocomplete="name" placeholder="Your name" />
+                </span>
+              </label>
+              <label>
+                <span>Work email</span>
+                <span class="field-input">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                  </svg>
+                  <input type="email" name="email" autocomplete="email" placeholder="you@company.com" />
+                </span>
+              </label>
+            </div>
+            <label>
+              <span>Company <em>(optional)</em></span>
+              <span class="field-input">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+                  <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+                  <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+                  <path d="M10 6h4M10 10h4M10 14h4M10 18h4" />
+                </svg>
+                <input type="text" name="company" autocomplete="organization" placeholder="Your company" />
+              </span>
+            </label>
+            <p class="contact-topic" hidden>
+              <span>About <strong data-topic-name></strong></span>
+              <button type="button" data-topic-clear>Clear</button>
+            </p>
+            <label class="message-field">
+              <span>How can we help?</span>
+              <span class="field-input">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                <textarea name="message" rows="5" placeholder="Share a few details about your project"></textarea>
+              </span>
+            </label>
+            <p class="form-alert" role="alert" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 8v4M12 16h.01" />
+              </svg>
+              Please add your name, a valid email, and a short message.
+            </p>
+            <button class="submit-button magnetic" type="submit">
+              <span data-label="idle">Send message</span>
+              <svg data-label="idle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+              <svg data-label="busy" class="spin" hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+              <span data-label="busy" hidden>Sending…</span>
+            </button>
+            <p class="form-note">Prototype only. Submitting checks the form on this page and does not email the team.</p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand brand--footer" href="#top" aria-label="Jencolink home">
+            <svg class="brand-logo" viewBox="0 0 346 320" aria-hidden="true">
+              <use href="#logo" />
+            </svg>
+            Jencolink
+          </a>
+          <p>Building software that supports growth, innovation, and lasting value.</p>
+        </div>
+        <nav class="footer-col" aria-label="Footer navigation">
+          <h2>Company</h2>
+          <button type="button" data-scroll="why">About</button>
+          <button type="button" data-scroll="services">Services</button>
+          <button type="button" data-scroll="faq">FAQ</button>
+          <button type="button" data-scroll="contact">Contact</button>
+        </nav>
+        <div class="footer-col">
+          <h2>Contact</h2>
+          <a href="mailto:hello@jencolink.com">hello@jencolink.com</a>
+          <a href="tel:+94714280380">+94 71 4 280 380</a>
+          <a href="tel:+94775690380">+94 77 5 690 380</a>
+          <div class="social-links" aria-label="Social links">
+            <a href="https://www.linkedin.com" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45Z" />
+              </svg>
+            </a>
+            <a href="https://github.com" aria-label="GitHub" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2a10 10 0 0 0-3.16 19.5c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.95 0-1.1.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.4 9.4 0 0 1 5 0c1.9-1.29 2.74-1.02 2.74-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.69 0 3.85-2.35 4.7-4.58 4.94.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-wordmark" aria-hidden="true">Jencolink</div>
+      <div class="footer-legal">
+        <span>© 2026 Jencolink. All rights reserved.</span>
+      </div>
+    </footer>
+
+    <div class="toast" role="status" hidden>
+      <svg data-toast-icon="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <path d="m9 12 2 2 4-4" />
+      </svg>
+      <svg data-toast-icon="bad" hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v4M12 16h.01" />
+      </svg>
+      <span data-toast-text></span>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
