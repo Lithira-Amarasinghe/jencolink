@@ -48,6 +48,7 @@ locals {
   manual_secret_names = toset([
     "sanity-project-id",
     "sanity-dataset",
+    "sanity-auth-token",
     "web3forms-access-key",
   ])
 }

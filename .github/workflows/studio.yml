@@ -1,0 +1,143 @@
+name: Studio (Sanity)
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'studio/**'
+      - '.github/workflows/studio.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'studio/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    name: Build Sanity Studio
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: studio
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'studio/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Studio
+        run: npx sanity build
+
+  deploy:
+    name: Deploy to Sanity
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    defaults:
+      run:
+        working-directory: studio
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'studio/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Read Studio deploy settings from Key Vault
+        env:
+          VAULT_NAME: ${{ secrets.AZURE_KEY_VAULT_NAME }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VAULT_NAME}" ]; then
+            echo "GitHub secret AZURE_KEY_VAULT_NAME is missing. Run terraform apply first."
+            exit 1
+          fi
+          python3 - << 'PY'
+          import os
+          import subprocess
+
+          vault = os.environ["VAULT_NAME"]
+
+          def read_secret(name: str) -> str:
+              result = subprocess.run(
+                  [
+                      "az", "keyvault", "secret", "show",
+                      "--vault-name", vault,
+                      "--name", name,
+                      "--query", "value",
+                      "-o", "tsv",
+                  ],
+                  check=True,
+                  capture_output=True,
+                  text=True,
+              )
+              return result.stdout.strip()
+
+          def missing(value: str) -> bool:
+              return value == "" or value == "pending"
+
+          project_id = read_secret("sanity-project-id")
+          dataset = read_secret("sanity-dataset")
+          token = read_secret("sanity-auth-token")
+
+          if missing(project_id):
+              raise SystemExit(
+                  "Key Vault secret sanity-project-id is empty or still 'pending'. "
+                  "Set it in the vault, then re-run this workflow."
+              )
+          if missing(token):
+              raise SystemExit(
+                  "Key Vault secret sanity-auth-token is empty or still 'pending'. "
+                  "Set a Sanity Developer token in the vault, then re-run this workflow."
+              )
+          if missing(dataset):
+              dataset = "production"
+
+          def mask(value: str) -> str:
+              return value.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+          # Register the mask before the token is written anywhere else.
+          print("::add-mask::" + mask(token), flush=True)
+
+          path = os.environ["GITHUB_ENV"]
+          with open(path, "a", encoding="utf-8") as env:
+              env.write(f"SANITY_STUDIO_PROJECT_ID={project_id}\n")
+              env.write(f"SANITY_STUDIO_DATASET={dataset}\n")
+              env.write("SANITY_AUTH_TOKEN<<EOF\n")
+              env.write(token)
+              env.write("\nEOF\n")
+          print("Studio settings loaded from Key Vault (values not printed).")
+          PY
+
+      - name: Deploy Studio
+        run: npm run deploy

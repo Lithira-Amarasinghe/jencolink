@@ -38,4 +38,6 @@ npm run dev
 
 Studio runs at http://localhost:3333. The website keeps its built-in copy until the project ID is set and the seed has published.
 
-Production deploys read `sanity-project-id`, `sanity-dataset`, and `web3forms-access-key` from Azure Key Vault and write them into the built `runtime-config.js`.
+On `master`, `.github/workflows/studio.yml` reads `sanity-project-id`, `sanity-dataset`, and `sanity-auth-token` from Azure Key Vault and runs `npm run deploy`. That publishes the editor to `https://jencolink.sanity.studio`.
+
+Create the deploy token in Sanity manage under API → Tokens. Use a Developer token. An Editor token can seed content, and it cannot deploy the Studio. Put that Developer token in the Key Vault secret `sanity-auth-token`. The same token can also be `SANITY_API_WRITE_TOKEN` in `studio/.env` for local seeding.

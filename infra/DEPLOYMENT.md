@@ -19,8 +19,9 @@ GitHub workflow overwrites the built copy with the Key Vault values.
 ## What Terraform creates
 
 - One Key Vault.
-- Three secret slots: `sanity-project-id`, `sanity-dataset`, `web3forms-access-key`.
-  The first apply stores the word `pending`. Later applies do not change the value.
+- Four secret slots: `sanity-project-id`, `sanity-dataset`, `sanity-auth-token`,
+  `web3forms-access-key`. The first apply stores the word `pending`. Later
+  applies do not change the value.
 - One Static Web App (Free).
 - Four GitHub Actions secrets: `AZURE_RESOURCE_GROUP`, `AZURE_KEY_VAULT_NAME`,
   `AZURE_SWA_NAME`, `AZURE_SWA_DEPLOYMENT_TOKEN`.
@@ -79,9 +80,12 @@ and set:
 |--------|--------|
 | `sanity-project-id` | Sanity project id |
 | `sanity-dataset` | `production`, or your dataset name |
+| `sanity-auth-token` | Sanity Developer token. This deploys the Studio. |
 | `web3forms-access-key` | Web3Forms access key |
 
 Do not run apply again expecting it to change these. It will not.
+If the vault was created before `sanity-auth-token` existed, run apply once
+more so that empty slot is created, then set its value.
 
 ## Deploy the website
 
@@ -96,22 +100,23 @@ does not deploy.
 The workflow stops if `sanity-project-id` or `web3forms-access-key` is still
 `pending`. An empty or `pending` dataset becomes `production`.
 
-## Studio
+## Deploy the editor
 
-From `studio/`, after `studio/.env` has the project id:
+Push `studio/` to `master`, or run the **Studio (Sanity)** workflow by hand
+on `master`.
 
-```bash
-npm run deploy
-```
+The workflow logs in to Azure, reads `sanity-auth-token` from Key Vault, and
+runs `npm run deploy`. Sanity hosts the editor at
+`https://jencolink.sanity.studio`. It is not part of the Static Web App.
 
-That publishes the editor to `https://jencolink.sanity.studio`. Sanity hosts
-it. It is not part of the Static Web App. In Sanity manage, allow CORS for
-`http://localhost:4200` and for the live site URL.
+A pull request only builds the Studio. It does not deploy. The workflow stops
+if `sanity-auth-token` or `sanity-project-id` is still `pending`.
+
+In Sanity manage, allow CORS for `http://localhost:4200` and for the live site URL.
 
 ## Still done by hand
 
 - `terraform apply`
 - The three OIDC GitHub secrets
-- The three Key Vault values
-- `npm run deploy` inside `studio/`
+- The four Key Vault values, including the Sanity Developer token
 - A custom domain, if you add one later

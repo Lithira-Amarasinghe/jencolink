@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "sanity dev",
     "build": "sanity build",
-    "deploy": "sanity deploy",
+    "deploy": "sanity deploy --yes --url jencolink --no-auto-updates",
     "seed": "node seed.mjs"
   },
   "dependencies": {

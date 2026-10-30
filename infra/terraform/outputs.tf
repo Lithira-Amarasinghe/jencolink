@@ -42,6 +42,6 @@ output "deployment_summary" {
     content        = "Sanity (hosted by Sanity, not Azure)"
     contact        = "Web3Forms (browser posts directly)"
     studio         = "https://jencolink.sanity.studio after sanity deploy"
-    secrets_filled = "Set sanity-project-id, sanity-dataset, and web3forms-access-key in Key Vault by hand"
+    secrets_filled = "Set sanity-project-id, sanity-dataset, sanity-auth-token, and web3forms-access-key in Key Vault by hand"
   }
 }
