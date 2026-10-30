@@ -21,7 +21,7 @@ az role assignment create \
 az ad app federated-credential create --id "$APP_ID" --parameters '{
   "name": "github-master",
   "issuer": "https://token.actions.githubusercontent.com",
-  "subject": "repo:Lithira-Amarasinghe/jencolink:ref:refs/heads/master",
+  "subject": "repo:Lithira-Amarasinghe@108219092/jencolink@1286232879:ref:refs/heads/master",
   "audiences": ["api://AzureADTokenExchange"]
 }'
 
@@ -31,7 +31,9 @@ echo "$SUBSCRIPTION_ID"
 ```
 
 If an app with that name already exists, skip `az ad app create` and reuse
-its app id. The subject above matches pushes and manual runs on `master`.
+its app id. GitHub sends the owner id and repository id in the subject.
+If a federated credential already exists, edit its subject to the value
+above. It must match exactly, including the numbers.
 
 ## 2. GitHub secrets
 
