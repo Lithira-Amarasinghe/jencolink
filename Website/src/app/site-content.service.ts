@@ -434,15 +434,20 @@ export class SiteContentService {
 
     try {
       const dataset = (globalThis as SanityConfig).__SANITY_DATASET__?.trim() || 'production';
-      // apicdn keeps the previous published copy for a while. Local preview uses
-      // the live API so a publish in Studio shows up on refresh.
-      const host = this.localPreview() ? 'api.sanity.io' : 'apicdn.sanity.io';
-      const url = `https://${projectId}.${host}/v2025-01-01/data/query/${dataset}?query=${encodeURIComponent(CONTENT_QUERY)}`;
+      const query = encodeURIComponent(CONTENT_QUERY);
+      // The dev server proxies /sanity-api so the browser is not blocked by
+      // Sanity's CORS check. Production reads the cached public API directly.
+      const url = this.localPreview()
+        ? `/sanity-api/${projectId}/v2025-01-01/data/query/${dataset}?query=${query}`
+        : `https://${projectId}.apicdn.sanity.io/v2025-01-01/data/query/${dataset}?query=${query}`;
       const response = await fetch(url, {
         headers: { Accept: 'application/json' },
         cache: 'no-store',
       });
-      if (!response.ok) throw new Error(`CMS fetch failed (${response.status})`);
+      if (!response.ok) {
+        const detail = (await response.text()).slice(0, 300);
+        throw new Error(`CMS fetch failed (${response.status}) ${detail}`);
+      }
       if (requestId !== this.requestId) return;
 
       const body = (await response.json()) as { result?: Record<string, unknown> };
