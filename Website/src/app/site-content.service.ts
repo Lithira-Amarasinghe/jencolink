@@ -436,12 +436,17 @@ export class SiteContentService {
       const dataset = (globalThis as SanityConfig).__SANITY_DATASET__?.trim() || 'production';
       const query = encodeURIComponent(CONTENT_QUERY);
       // The dev server proxies /sanity-api so the browser is not blocked by
-      // Sanity's CORS check. Production reads the cached public API directly.
+      // Sanity's CORS check. The project id travels in a header because the
+      // proxy rewrites the path before it chooses the Sanity host.
+      // Production reads the cached public API directly.
       const url = this.localPreview()
-        ? `/sanity-api/${projectId}/v2025-01-01/data/query/${dataset}?query=${query}`
+        ? `/sanity-api/v2025-01-01/data/query/${dataset}?query=${query}`
         : `https://${projectId}.apicdn.sanity.io/v2025-01-01/data/query/${dataset}?query=${query}`;
       const response = await fetch(url, {
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          ...(this.localPreview() ? { 'X-Sanity-Project': projectId } : {}),
+        },
         cache: 'no-store',
       });
       if (!response.ok) {
