@@ -365,6 +365,7 @@ function publicBrand(value: string): string {
 type SanityConfig = {
   __SANITY_PROJECT_ID__?: string;
   __SANITY_DATASET__?: string;
+  __APP_ENV__?: string;
 };
 
 const CONTENT_QUERY = `{
@@ -413,27 +414,63 @@ export class SiteContentService {
   readonly contactSection = computed(() => this.content().contactSection);
   readonly companyDetails = computed(() => this.content().companyDetails);
 
+  private requestId = 0;
+  private watchingEdits = false;
+
   async load(): Promise<void> {
+    const requestId = ++this.requestId;
     const projectId = this.projectId();
     if (!projectId) {
       this.loading.set(false);
+      if (this.localPreview()) {
+        console.warn(
+          'Sanity project id is empty, so the page is showing the built-in copy. Set window.__SANITY_PROJECT_ID__ in Website/public/runtime-config.js to the same id as studio/.env.',
+        );
+      }
       return;
     }
 
+    this.watchForPublishedEdits();
+
     try {
       const dataset = (globalThis as SanityConfig).__SANITY_DATASET__?.trim() || 'production';
-      const url = `https://${projectId}.apicdn.sanity.io/v2025-01-01/data/query/${dataset}?query=${encodeURIComponent(CONTENT_QUERY)}`;
-      const response = await fetch(url, { headers: { Accept: 'application/json' } });
-      if (!response.ok) throw new Error('CMS fetch failed');
+      // apicdn keeps the previous published copy for a while. Local preview uses
+      // the live API so a publish in Studio shows up on refresh.
+      const host = this.localPreview() ? 'api.sanity.io' : 'apicdn.sanity.io';
+      const url = `https://${projectId}.${host}/v2025-01-01/data/query/${dataset}?query=${encodeURIComponent(CONTENT_QUERY)}`;
+      const response = await fetch(url, {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      });
+      if (!response.ok) throw new Error(`CMS fetch failed (${response.status})`);
+      if (requestId !== this.requestId) return;
 
       const body = (await response.json()) as { result?: Record<string, unknown> };
       const result = body.result ?? {};
       this.content.set(this.fromSanity(result));
-    } catch {
-      // Sanity unreachable — keep the copy already in the signal.
+    } catch (error) {
+      if (requestId !== this.requestId) return;
+      if (this.localPreview()) {
+        console.warn(
+          'Sanity content was not applied. The page is showing the built-in copy.',
+          error,
+        );
+      }
     } finally {
-      this.loading.set(false);
+      if (requestId === this.requestId) this.loading.set(false);
     }
+  }
+
+  private localPreview(): boolean {
+    return (globalThis as SanityConfig).__APP_ENV__ !== 'production';
+  }
+
+  private watchForPublishedEdits(): void {
+    if (this.watchingEdits || !this.localPreview() || typeof document === 'undefined') return;
+    this.watchingEdits = true;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') void this.load();
+    });
   }
 
   private projectId(): string | null {
