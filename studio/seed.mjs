@@ -1,26 +1,64 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createClient } from '@sanity/client';
 import { content } from './seed-content.mjs';
 
-if (existsSync(new URL('./.env', import.meta.url))) {
-  const raw = readFileSync(new URL('./.env', import.meta.url), 'utf8');
-  for (const line of raw.split('\n')) {
-    const match = line.match(/^\s*([^#=]+)=(.*)$/);
-    if (!match) continue;
-    const key = match[1].trim();
-    if (!process.env[key]) process.env[key] = match[2].trim();
+const studioDir = dirname(fileURLToPath(import.meta.url));
+
+function decodeEnv(buffer) {
+  if (buffer.length >= 2 && buffer[0] === 0xff && buffer[1] === 0xfe) {
+    return buffer.subarray(2).toString('utf16le');
   }
+  if (buffer.length >= 2 && buffer[0] === 0xfe && buffer[1] === 0xff) {
+    const swapped = Buffer.from(buffer.subarray(2));
+    for (let i = 0; i + 1 < swapped.length; i += 2) {
+      const left = swapped[i];
+      swapped[i] = swapped[i + 1];
+      swapped[i + 1] = left;
+    }
+    return swapped.toString('utf16le');
+  }
+  const text = buffer.toString('utf8');
+  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
 }
+
+function loadEnvFile(filePath) {
+  if (!existsSync(filePath)) return false;
+  const raw = decodeEnv(readFileSync(filePath));
+  for (const line of raw.split(/\r?\n/)) {
+    const match = line.match(/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!match) continue;
+    let value = match[2].trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    if (!process.env[match[1]]) process.env[match[1]] = value;
+  }
+  return true;
+}
+
+const envPath = join(studioDir, '.env');
+const envTxtPath = join(studioDir, '.env.txt');
+const envFile = loadEnvFile(envPath) ? envPath : loadEnvFile(envTxtPath) ? envTxtPath : '';
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID?.trim();
 const dataset = process.env.SANITY_STUDIO_DATASET?.trim() || 'production';
 const token = process.env.SANITY_API_WRITE_TOKEN?.trim();
 
 if (!projectId || !token) {
-  console.log(
-    'Seed not run. Add SANITY_STUDIO_PROJECT_ID and SANITY_API_WRITE_TOKEN to studio/.env, then run npm run seed again.',
-  );
-  process.exit(0);
+  const missing = [
+    !projectId ? 'SANITY_STUDIO_PROJECT_ID' : '',
+    !token ? 'SANITY_API_WRITE_TOKEN' : '',
+  ].filter(Boolean);
+  const where = envFile
+    ? `Read ${envFile}, but these values are empty: ${missing.join(', ')}.`
+    : 'Could not find studio/.env. If Notepad saved it, the file may be named .env.txt.';
+  console.log(`Seed not run. ${where}`);
+  process.exit(1);
 }
 
 const client = createClient({ projectId, dataset, token, apiVersion: '2025-01-01', useCdn: false });
