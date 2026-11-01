@@ -1,13 +1,13 @@
 variable "resource_group_name" {
   description = "Existing Azure resource group name"
   type        = string
-  default     = "gencolink"
+  default     = "jencolink"
 }
 
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "gencolink"
+  default     = "jencolink"
 }
 
 variable "environment" {
