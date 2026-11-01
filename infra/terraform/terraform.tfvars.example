@@ -6,9 +6,9 @@
 # in the Azure portal after apply.
 
 # Existing resource group (Terraform reads it; it must already exist)
-resource_group_name = "gencolink"
+resource_group_name = "jencolink"
 
-project_name = "gencolink"
+project_name = "jencolink"
 environment  = "prod"
 
 primary_location = "eastus2"

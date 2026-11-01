@@ -16,7 +16,7 @@ SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 az role assignment create \
   --assignee "$APP_ID" \
   --role Contributor \
-  --scope "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/gencolink"
+  --scope "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/jencolink"
 
 az ad app federated-credential create --id "$APP_ID" --parameters '{
   "name": "github-master",
@@ -31,7 +31,9 @@ echo "$SUBSCRIPTION_ID"
 ```
 
 If an app with that name already exists, skip `az ad app create` and reuse
-its app id. GitHub sends the owner id and repository id in the subject.
+its app id. If Contributor was granted on resource group `gencolink`, add
+the same role on `jencolink`. The old assignment does not cover the new group.
+GitHub sends the owner id and repository id in the subject.
 If a federated credential already exists, edit its subject to the value
 above. It must match exactly, including the numbers.
 
@@ -55,7 +57,7 @@ Contributor does not allow reading secret values. Either set
 or after the vault exists:
 
 ```bash
-VAULT_ID=$(az keyvault show -n YOUR_VAULT_NAME -g gencolink --query id -o tsv)
+VAULT_ID=$(az keyvault show -n YOUR_VAULT_NAME -g jencolink --query id -o tsv)
 az role assignment create \
   --assignee "$APP_ID" \
   --role "Key Vault Secrets User" \

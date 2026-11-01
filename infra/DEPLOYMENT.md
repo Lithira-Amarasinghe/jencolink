@@ -10,7 +10,7 @@ editing studio. The contact form posts to Web3Forms from the browser.
 | Content | Sanity content API |
 | Editing UI | Sanity Studio at `https://jencolink.sanity.studio` |
 | Contact | Web3Forms |
-| Terraform state | New empty file `website.tfstate` in storage account `gencolinktfstate` |
+| Terraform state | New empty file `website.tfstate` in storage account `jencolinktfstate` |
 
 `runtime-config.js` is a small file the built site loads before Angular.
 Locally it lives in `Website/public/runtime-config.js`. On deploy, the
@@ -18,11 +18,11 @@ GitHub workflow overwrites the built copy with the Key Vault values.
 
 ## What Terraform creates
 
-- One Key Vault.
+- One Key Vault, named `jencolinkprodkv`.
 - Four secret slots: `sanity-project-id`, `sanity-dataset`, `sanity-auth-token`,
   `web3forms-access-key`. The first apply stores the word `pending`. Later
   applies do not change the value.
-- One Static Web App (Free).
+- One Static Web App (Free), named `jencolink-prod-frontend`.
 - Four GitHub Actions secrets: `AZURE_RESOURCE_GROUP`, `AZURE_KEY_VAULT_NAME`,
   `AZURE_SWA_NAME`, `AZURE_SWA_DEPLOYMENT_TOKEN`.
 
@@ -32,8 +32,18 @@ already deleted, and it will not try to delete or recreate them.
 
 ## One-time setup
 
-1. Resource group `gencolink` already exists. Terraform reads it.
-2. State storage already exists. See git history if you ever need to recreate it.
+1. Resource group `jencolink` must already exist. Terraform reads it and does not create it. Azure cannot rename `gencolink`, so create a new group:
+
+   ```bash
+   az group create --name jencolink --location eastus2
+   ```
+
+2. State storage is separate from that group. Create it once. This makes resource group `jencolink-rg-tfstate` and storage account `jencolinktfstate`. It does not copy the old `gencolinktfstate` account.
+
+   ```bash
+   cd infra/terraform
+   bash scripts/bootstrap-state.sh
+   ```
 3. GitHub OIDC app. See [AZURE_OIDC_SETUP.md](../AZURE_OIDC_SETUP.md).
    Put these three in GitHub Actions secrets yourself:
    `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`.
