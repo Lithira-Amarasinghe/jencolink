@@ -146,7 +146,7 @@ function validate({ name, email, company, message }) {
 
 function buildPlainText({ name, email, company, message }) {
   return [
-    'New contact form submission from gencolink.com',
+    'New contact form submission from jencolink.com',
     '',
     `Name:    ${name}`,
     `Email:   ${email}`,
@@ -183,7 +183,7 @@ function buildHtml({ name, email, company, message }) {
   <h3 style="margin-bottom:8px">Message</h3>
   <p style="white-space:pre-wrap;background:#f9f9f9;padding:16px;border-radius:6px;margin:0">${esc(message)}</p>
   <hr style="margin-top:32px;border:none;border-top:1px solid #e5e5e5">
-  <p style="font-size:12px;color:#888">Sent from gencolink.com contact form</p>
+  <p style="font-size:12px;color:#888">Sent from jencolink.com contact form</p>
 </body>
 </html>`;
 }

@@ -4,8 +4,8 @@
  * Usage: TARGET_PASS=... node cleanup-duplicates.js
  */
 
-const TARGET_URL = (process.env.TARGET_URL ?? 'https://gencolink-prod-directus.mangopebble-81978e02.eastus2.azurecontainerapps.io').replace(/\/$/, '');
-const TARGET_EMAIL = process.env.TARGET_EMAIL ?? 'admin@gencolink.com';
+const TARGET_URL = (process.env.TARGET_URL ?? 'https://jencolink-prod-directus.mangopebble-81978e02.eastus2.azurecontainerapps.io').replace(/\/$/, '');
+const TARGET_EMAIL = process.env.TARGET_EMAIL ?? 'admin@jencolink.com';
 const TARGET_PASS = process.env.TARGET_PASS;
 
 async function request(method, path, body, token) {

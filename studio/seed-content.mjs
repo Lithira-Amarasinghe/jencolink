@@ -236,7 +236,7 @@ export const content = {
   companyDetails: {
     brandName: 'Jencolink',
     tagline: 'Building software that supports growth, innovation, and lasting value.',
-    email: 'hello@gencolink.com',
+    email: 'hello@jencolink.com',
     phonePrimary: '+94 71 4 280 380',
     phoneSecondary: '+94 77 5 690 380',
     linkedinUrl: 'https://www.linkedin.com',

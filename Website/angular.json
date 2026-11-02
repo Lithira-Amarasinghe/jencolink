@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "gencolink": {
+    "jencolink": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -69,10 +69,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "gencolink:build:production"
+              "buildTarget": "jencolink:build:production"
             },
             "development": {
-              "buildTarget": "gencolink:build:development"
+              "buildTarget": "jencolink:build:development"
             }
           },
           "defaultConfiguration": "development"
