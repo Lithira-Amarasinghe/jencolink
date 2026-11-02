@@ -279,3 +279,48 @@ h3 {
     scroll-behavior: auto;
   }
 }
+
+/* Pinned hero intro. The header stays out of the title card and fades in
+   on the same scroll progress that seats the lockup. Foreground content
+   stays hidden until measurement has placed it, so the first paint is not
+   a flash of the resting layout. */
+html.hero-sequencing .site-header {
+  opacity: var(--hero-chrome, 0);
+  transform: translateY(calc((1 - var(--hero-chrome, 0)) * -12px));
+}
+
+html.hero-sequencing:not(.hero-chrome-on) .site-header {
+  pointer-events: none;
+}
+
+html.hero-sequencing:not(.hero-ready) .hero-fore {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.hero-sequencing.hero-ready .hero-fore {
+    animation: hero-fore-in 0.7s var(--ease-out) both;
+  }
+}
+
+@keyframes hero-fore-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.hero-sequencing .site-header {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  html.hero-sequencing .hero-fore {
+    opacity: 1;
+    animation: none;
+  }
+}

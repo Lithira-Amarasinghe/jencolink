@@ -1,72 +1,90 @@
-<section class="hero" #scene aria-labelledby="hero-title">
-  <div class="hero-aurora" #aurora aria-hidden="true">
-    <span class="hero-aurora-wash" data-wash="0"></span>
-    <span class="hero-aurora-wash" data-wash="1"></span>
-    <span class="hero-aurora-wash" data-wash="2"></span>
-    <span class="hero-aurora-wash hero-aurora-wash--follow" data-wash="follow"></span>
-  </div>
+<section class="hero-stage" #stage aria-labelledby="hero-title">
+  <div class="hero-pin hero" #pin>
+    <button type="button" class="hero-skip" (click)="skipIntro()">Skip intro</button>
 
-  <div class="hero-split">
-    <div class="hero-copy">
-      <h1 id="hero-title" class="hero-word" [attr.aria-label]="brandName()">
-        <span class="hero-letters" aria-hidden="true">
-          @for (letter of brandLetters(); track $index) {
-            <span class="hero-letter" [style.--i]="$index">{{ letter }}</span>
-          }
-        </span>
-      </h1>
-
-      <p class="hero-mission" (pointermove)="onMissionMove($event)" (pointerleave)="clearMission()">
-        @for (word of missionWords; track $index) {
-          <span class="mission-word" [style.--i]="$index">{{ word }}</span>{{ ' ' }}
-        }
-      </p>
-
-      <div
-        class="hero-tags"
-        role="radiogroup"
-        aria-label="Practices"
-        (keydown)="onTagsKeydown($event)"
-      >
-        @for (lane of lanes; track lane.id) {
-          <button
-            #tag
-            type="button"
-            role="radio"
-            [attr.aria-checked]="activeLane()?.id === lane.id"
-            [style.--i]="$index"
-            (click)="selectLane(lane)"
-          >
-            {{ lane.label }}
-          </button>
-        }
-      </div>
-
-      <div class="hero-note-wrap" [attr.data-open]="noteOpen() ? 'true' : 'false'">
-        <p class="hero-note" aria-live="polite">{{ noteText() }}</p>
-      </div>
-
-      <button type="button" class="hero-more" [hidden]="!activeLane()" (click)="seeServices()">
-        See these services
-      </button>
+    <div class="hero-aurora" #aurora aria-hidden="true">
+      <span class="hero-aurora-wash" data-wash="0"></span>
+      <span class="hero-aurora-wash" data-wash="1"></span>
+      <span class="hero-aurora-wash" data-wash="2"></span>
+      <span class="hero-aurora-wash hero-aurora-wash--follow" data-wash="follow"></span>
     </div>
 
-    <button
-      type="button"
-      class="hero-emblem"
-      [attr.aria-label]="'Play the ' + brandName() + ' mark again'"
-      (pointerdown)="onEmblemDown($event)"
-      (pointermove)="onEmblemMove($event)"
-      (pointerup)="onEmblemUp()"
-      (pointercancel)="onEmblemUp()"
-      (click)="onEmblemClick()"
-    >
-      <span class="hero-emblem-in">
-        <span class="hero-emblem-shift">
-          <app-logo-mark />
-        </span>
-      </span>
-      <span class="hero-drag-hint" [class.is-gone]="hintGone()">Drag to tilt</span>
-    </button>
+    <div class="hero-fore">
+      <div class="hero-horizon" #horizon aria-hidden="true"></div>
+
+      <div class="hero-split">
+        <div class="hero-copy">
+          <h1 id="hero-title" class="hero-word" #word [attr.aria-label]="brandName()">
+            <span class="hero-word-float" #wordFloat>
+              <span class="hero-letters" aria-hidden="true">
+                @for (letter of brandLetters(); track $index) {
+                  @if (letter === ' ') {
+                    <span class="hero-letter hero-letter--gap">{{ letter }}</span>
+                  } @else {
+                    <span class="hero-letter"
+                      ><span class="hero-letter-in">{{ letter }}</span></span
+                    >
+                  }
+                }
+              </span>
+            </span>
+          </h1>
+
+          <p
+            class="hero-mission"
+            #mission
+            (pointermove)="onMissionMove($event)"
+            (pointerleave)="clearMission()"
+          >
+            @for (missionWord of missionWords; track $index) {
+              <span class="mission-word" [style.--i]="$index"
+                ><span class="mission-word-in">{{ missionWord }}</span></span
+              >{{ ' ' }}
+            }
+          </p>
+
+          <div
+            class="hero-tags"
+            role="radiogroup"
+            aria-label="Practices"
+            (keydown)="onTagsKeydown($event)"
+          >
+            @for (lane of lanes; track lane.id) {
+              <button
+                #tag
+                type="button"
+                role="radio"
+                [attr.aria-checked]="activeLane()?.id === lane.id"
+                [style.--i]="$index"
+                (click)="selectLane(lane)"
+              >
+                {{ lane.label }}
+              </button>
+            }
+          </div>
+
+          <div class="hero-note-wrap" [attr.data-open]="noteOpen() ? 'true' : 'false'">
+            <p class="hero-note" aria-live="polite">{{ noteText() }}</p>
+          </div>
+
+          <button type="button" class="hero-more" [hidden]="!activeLane()" (click)="seeServices()">
+            See these services
+          </button>
+        </div>
+
+        <div class="hero-emblem" aria-hidden="true">
+          <span class="hero-emblem-float" #markFloat>
+            <span class="hero-emblem-in" #mark>
+              <app-logo-mark />
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="hero-meter" #meter aria-hidden="true">
+        <span class="hero-meter-label">Scroll</span>
+        <span class="hero-meter-track"><span class="hero-meter-fill"></span></span>
+      </div>
+    </div>
   </div>
 </section>

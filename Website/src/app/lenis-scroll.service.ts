@@ -47,6 +47,19 @@ export class LenisScrollService {
     });
   }
 
+  scrollTo(
+    target: number | string | HTMLElement,
+    options?: { duration?: number; immediate?: boolean; force?: boolean },
+  ): void {
+    if (this.lenis) {
+      this.lenis.scrollTo(target, options);
+      return;
+    }
+    if (typeof target === 'number') {
+      window.scrollTo({ top: target, behavior: options?.immediate ? 'auto' : 'smooth' });
+    }
+  }
+
   destroy(): void {
     if (this.rafId !== undefined) {
       cancelAnimationFrame(this.rafId);
