@@ -62,13 +62,6 @@ const LINK_OPEN = [
   { x: -28, y: 34 },
 ];
 
-/** Pulled toward the joint until the load reveal finishes. */
-const LINK_GATHER = [
-  { x: -12, y: 16 },
-  { x: 0, y: 0 },
-  { x: 12, y: -16 },
-];
-
 const MISSION = [
   'A',
   'better',
@@ -98,11 +91,11 @@ const CHROME_END = 0.96;
 
 /**
  * Scroll-attached hero. On load the mark and wordmark sit as a centered
- * title card. Scrolling (and scrolling back) scrubs one pinned sequence:
- * the chain opens, the letters travel one by one into the headline, then
- * the links close as the mission and practices assemble. Scrolling back
- * reverses it. Once the hero is seated, a hover (desktop) or a tap
- * (touch and keyboard) opens the chain again. The logo does not tilt.
+ * title card. Scrolling (and scrolling back) scrubs one pinned sequence.
+ * The mark keeps its original shape the whole way. Letters travel into the
+ * headline, then the mission and practices assemble. Once the hero is
+ * seated, a hover (desktop) or a tap (touch and keyboard) opens the chain.
+ * The logo does not tilt.
  * Reduced motion skips the pin and shows the resting hero immediately.
  */
 @Component({
@@ -186,7 +179,6 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private letterShifts: LetterShift[] = [];
   private linkEls: SVGElement[] = [];
   private linkReveal = [1, 1, 1];
-  private scrollOpen = 0;
   private userOpen = 0;
   private hoverOpen = false;
   private pointerOver = false;
@@ -413,16 +405,14 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   private paintLinks(): void {
-    const user = this.reducedMotion ? this.userTarget() : this.userOpen;
-    const open = Math.min(1, this.scrollOpen + user);
+    const open = Math.min(1, this.reducedMotion ? this.userTarget() : this.userOpen);
     this.linkEls.forEach((el, index) => {
       const reveal = this.linkReveal[index] ?? 1;
       const spec = LINK_OPEN[index] ?? { x: 0, y: 0 };
-      const pull = LINK_GATHER[index] ?? { x: 0, y: 0 };
-      const gather = 1 - reveal;
-      const dx = spec.x * open + pull.x * gather;
-      const dy = spec.y * open + pull.y * gather;
-      el.setAttribute('transform', `translate(${dx.toFixed(2)} ${dy.toFixed(2)})`);
+      const dx = spec.x * open;
+      const dy = spec.y * open;
+      if (Math.abs(dx) < 0.05 && Math.abs(dy) < 0.05) el.removeAttribute('transform');
+      else el.setAttribute('transform', `translate(${dx.toFixed(2)} ${dy.toFixed(2)})`);
       el.style.opacity = reveal.toFixed(3);
     });
   }
@@ -659,9 +649,6 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       slot.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
     }
 
-    const opened = inOutCubic(span(p, 0.06, 0.28));
-    const shut = inOutCubic(span(p, 0.4, 0.68));
-    this.scrollOpen = opened * (1 - shut);
     this.syncSeat();
     this.paintLinks();
 
@@ -777,7 +764,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   private stepField(scene: HTMLElement, now: number): void {
-    const spread = 0.84 + this.progress * 0.1 + Math.min(1, this.scrollOpen + this.userOpen) * 0.2;
+    const spread = 0.84 + this.progress * 0.1 + Math.min(1, this.userOpen) * 0.2;
     this.placeWashes(scene, now / 1000, (this.gx - 0.5) * 0.22, (this.gy - 0.42) * 0.18, spread);
     const follow = scene.querySelector<HTMLElement>('[data-wash="follow"]');
     if (!follow) return;
@@ -951,7 +938,6 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       link.removeAttribute('transform');
       link.style.opacity = '';
     }
-    this.scrollOpen = 0;
     this.userOpen = 0;
     this.linkReveal = [1, 1, 1];
   }
