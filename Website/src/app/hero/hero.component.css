@@ -365,12 +365,6 @@
   color: inherit;
   font: inherit;
   text-align: inherit;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.hero-emblem:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 8px;
 }
 
 .hero-emblem-float {
@@ -383,10 +377,6 @@
   display: block;
   width: 100%;
   transform-origin: center center;
-}
-
-.hero-touch-hint {
-  display: none;
 }
 
 .hero-more {
@@ -456,33 +446,6 @@
   .hero-note-wrap,
   .hero-more {
     margin-inline: auto;
-  }
-}
-
-@media (hover: none) and (pointer: coarse) {
-  .hero-emblem {
-    flex-direction: column;
-  }
-
-  .hero-touch-hint {
-    position: absolute;
-    left: 50%;
-    top: calc(100% + 12px);
-    display: block;
-    width: max-content;
-    margin-top: 0;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    text-align: center;
-    color: var(--text-body);
-    transform: translateX(-50%);
-  }
-
-  .hero-touch-hint[data-hidden='true'] {
-    display: none;
   }
 }
 
