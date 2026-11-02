@@ -1,5 +1,5 @@
 variable "resource_group_name" {
-  description = "Existing Azure resource group name"
+  description = "Website resource group. Terraform creates it."
   type        = string
   default     = "jencolink"
 }

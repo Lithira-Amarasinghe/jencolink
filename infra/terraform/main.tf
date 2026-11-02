@@ -5,8 +5,10 @@
 # secrets are created here as placeholders. Set their values in the Azure
 # portal. Later applies do not overwrite those values.
 
-data "azurerm_resource_group" "main" {
-  name = var.resource_group_name
+resource "azurerm_resource_group" "main" {
+  name     = var.resource_group_name
+  location = var.primary_location
+  tags     = local.common_tags
 }
 
 locals {
@@ -56,7 +58,7 @@ locals {
 module "key_vault" {
   source = "./modules/key-vault"
 
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   location            = local.keyvault_location
   project_name        = var.project_name
   environment         = var.environment
@@ -66,7 +68,7 @@ module "key_vault" {
 module "static_web_app" {
   source = "./modules/static-web-app"
 
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = azurerm_resource_group.main.name
   location            = local.frontend_location
   project_name        = var.project_name
   environment         = var.environment
@@ -98,11 +100,18 @@ resource "azurerm_key_vault_secret" "manual" {
 }
 
 # Optional. When github_actions_client_id is set, the GitHub OIDC app can
-# read the three secrets during deploy. Contributor on the resource group
-# does not include this data-plane role.
+# manage resources in this group and read the vault during deploy.
+# Contributor does not include reading secret values.
 data "azuread_service_principal" "github_actions" {
   count     = var.github_actions_client_id != "" ? 1 : 0
   client_id = var.github_actions_client_id
+}
+
+resource "azurerm_role_assignment" "github_actions_contributor" {
+  count                = var.github_actions_client_id != "" ? 1 : 0
+  scope                = azurerm_resource_group.main.id
+  role_definition_name = "Contributor"
+  principal_id         = data.azuread_service_principal.github_actions[0].object_id
 }
 
 resource "azurerm_role_assignment" "github_actions_key_vault_secrets_user" {
@@ -121,7 +130,7 @@ resource "azurerm_role_assignment" "github_actions_key_vault_secrets_user" {
 resource "github_actions_secret" "azure_resource_group" {
   repository  = var.github_repository
   secret_name = "AZURE_RESOURCE_GROUP"
-  value       = data.azurerm_resource_group.main.name
+  value       = azurerm_resource_group.main.name
 }
 
 resource "github_actions_secret" "azure_key_vault_name" {

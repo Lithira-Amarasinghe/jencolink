@@ -18,6 +18,7 @@ GitHub workflow overwrites the built copy with the Key Vault values.
 
 ## What Terraform creates
 
+- One resource group, named `jencolink`.
 - One Key Vault, named `jencolinkprodkv`.
 - Four secret slots: `sanity-project-id`, `sanity-dataset`, `sanity-auth-token`,
   `web3forms-access-key`. The first apply stores the word `pending`. Later
@@ -32,25 +33,19 @@ already deleted, and it will not try to delete or recreate them.
 
 ## One-time setup
 
-1. Resource group `jencolink` must already exist. Terraform reads it and does not create it. Azure cannot rename `gencolink`, so create a new group:
-
-   ```bash
-   az group create --name jencolink --location eastus2
-   ```
-
-2. State storage is separate from that group. Create it once. This makes resource group `jencolink-rg-tfstate` and storage account `jencolinktfstate`. It does not copy the old `gencolinktfstate` account.
+1. State storage is separate from the website group. Create it once. This makes resource group `jencolink-rg-tfstate` and storage account `jencolinktfstate`. It does not copy the old `gencolinktfstate` account. Terraform creates the website group `jencolink` during apply.
 
    ```bash
    cd infra/terraform
    bash scripts/bootstrap-state.sh
    ```
-3. GitHub OIDC app. See [AZURE_OIDC_SETUP.md](../AZURE_OIDC_SETUP.md).
+2. GitHub OIDC app. See [AZURE_OIDC_SETUP.md](../AZURE_OIDC_SETUP.md).
    Put these three in GitHub Actions secrets yourself:
    `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`.
-4. A GitHub PAT with Actions read/write on this repo. Export it as
+3. A GitHub PAT with Actions read/write on this repo. Export it as
    `GITHUB_TOKEN` in the shell you use for Terraform. Do not put it in
    `terraform.tfvars`.
-5. Copy the example vars and set the GitHub owner plus the OIDC client id:
+4. Copy the example vars and set the GitHub owner plus the OIDC client id:
 
    ```bash
    cd infra/terraform
@@ -58,9 +53,9 @@ already deleted, and it will not try to delete or recreate them.
    ```
 
    Set `github_actions_client_id` to the same value as `AZURE_CLIENT_ID`.
-   That grants the workflow permission to read Key Vault. If you leave it
-   empty, assign **Key Vault Secrets User** on the vault to the GitHub app
-   yourself after apply.
+   That grants the workflow **Contributor** on the website group and
+   **Key Vault Secrets User** on the vault. If you leave it empty, assign
+   both roles yourself after apply.
 
 ## Apply
 
@@ -76,8 +71,9 @@ terraform apply
 ```
 
 `terraform init` may ask to copy the old `prod.tfstate`. Answer **no**.
-`-reconfigure` keeps the new `website.tfstate` empty. The plan should only
-create the vault, the three secret slots, the website, and the GitHub secrets.
+`-reconfigure` keeps the new `website.tfstate` empty. The plan should create
+the `jencolink` resource group, the vault, the four secret slots, the website,
+and the GitHub secrets.
 
 There is no workflow that runs Terraform. You apply it yourself.
 

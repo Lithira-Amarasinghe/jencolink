@@ -5,7 +5,7 @@
 # Terraform creates empty slots for them in Key Vault. You set the values
 # in the Azure portal after apply.
 
-# Existing resource group (Terraform reads it; it must already exist)
+# Terraform creates this resource group.
 resource_group_name = "jencolink"
 
 project_name = "jencolink"
