@@ -37,7 +37,7 @@
  */
 
 const BASE = (process.env.DIRECTUS_URL ?? 'http://localhost:8055').replace(/\/$/, '');
-const EMAIL = process.env.ADMIN_EMAIL ?? 'admin@gencolink.com';
+const EMAIL = process.env.ADMIN_EMAIL ?? 'admin@jencolink.com';
 const PASS = process.env.ADMIN_PASSWORD;
 const STATIC_TOKEN = process.env.DIRECTUS_ADMIN_TOKEN;
 const KEY_VAULT_NAME = process.env.AZURE_KEY_VAULT_NAME;
@@ -240,7 +240,7 @@ const FAQS = [
 const COMPANY_DETAILS = {
   brandName: 'Gencolink',
   tagline: 'Building software that supports growth, innovation, and lasting value.',
-  email: 'hello@gencolink.com',
+  email: 'hello@jencolink.com',
   phonePrimary: '+94 71 4 280 380',
   phoneSecondary: '+94 77 5 690 380',
   linkedinUrl: 'https://www.linkedin.com',

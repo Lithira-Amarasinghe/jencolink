@@ -57,8 +57,8 @@ jobs:
       # this file with the live values before upload.
       - name: Write placeholder runtime config
         run: |
-          mkdir -p dist/gencolink/browser
-          cat > dist/gencolink/browser/runtime-config.js << 'EOF'
+          mkdir -p dist/jencolink/browser
+          cat > dist/jencolink/browser/runtime-config.js << 'EOF'
           window.__SANITY_PROJECT_ID__ = '';
           window.__SANITY_DATASET__ = 'production';
           window.__WEB3FORMS_ACCESS_KEY__ = '';
@@ -67,19 +67,19 @@ jobs:
 
       - name: Copy staticwebapp.config.json to browser dir
         run: |
-          mkdir -p dist/gencolink/browser
-          cp staticwebapp.config.json dist/gencolink/browser/
+          mkdir -p dist/jencolink/browser
+          cp staticwebapp.config.json dist/jencolink/browser/
 
       - name: Verify build artifacts
         run: |
-          ls -la dist/gencolink/
-          echo "Build size: $(du -sh dist/gencolink/)"
+          ls -la dist/jencolink/
+          echo "Build size: $(du -sh dist/jencolink/)"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: angular-build
-          path: Website/dist/gencolink/
+          path: Website/dist/jencolink/
           retention-days: 7
 
   deploy:

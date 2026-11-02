@@ -1,5 +1,5 @@
 const BASE = 'http://localhost:8055';
-const EMAIL = 'admin@gencolink.com';
+const EMAIL = 'admin@jencolink.com';
 const PASS = 'GencoCMS2025!';
 
 async function request(method, path, body, token) {

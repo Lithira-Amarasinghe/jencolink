@@ -4,7 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 export type ThemePref = 'light' | 'dark' | 'system';
 export type EffectiveTheme = 'light' | 'dark';
 
-const STORAGE_KEY = 'gencolink-theme';
+const STORAGE_KEY = 'jencolink-theme';
 
 /**
  * Theme control. Three states:

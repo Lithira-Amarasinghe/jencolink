@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a multi-project repo, not a single app:
 
 - **`studio/`** — Sanity Studio. Editors change services, values, FAQ, section headings, and company details here. The website reads the public dataset.
-- **`Website/`** — Angular 20 (standalone components, signals) frontend, project name `gencolink`.
+- **`Website/`** — Angular 20 (standalone components, signals) frontend, project name `jencolink`.
 - **`Directus/`** and **`functions/`** — previous CMS and contact-email function. The site no longer calls them. Contact messages post to Web3Forms from the browser.
 
 Integration flow: Sanity query API → `Website/public/runtime-config.js` (`window.__SANITY_PROJECT_ID__`, `window.__SANITY_DATASET__`, `window.__WEB3FORMS_ACCESS_KEY__`) → Angular `SiteContentService` (falls back to defaults if the project id is empty or the fetch fails). Production overwrites `runtime-config.js` in the frontend workflow.

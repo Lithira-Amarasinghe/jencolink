@@ -33,7 +33,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your environment/.env - no default is provided for security}
 
       # Admin account
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@gencolink.com}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@jencolink.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in your environment/.env - no default is provided for security}
 
       # Tokens & secrets

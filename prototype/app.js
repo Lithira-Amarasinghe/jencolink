@@ -18,8 +18,7 @@
 
   const readStored = () => {
     try {
-      const value =
-        localStorage.getItem(STORAGE_KEY) || localStorage.getItem("gencolink-prototype-theme");
+      const value = localStorage.getItem(STORAGE_KEY);
       return value === "light" || value === "dark" ? value : "system";
     } catch {
       return "system";

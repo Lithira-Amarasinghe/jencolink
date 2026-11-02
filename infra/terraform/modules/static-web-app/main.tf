@@ -23,13 +23,13 @@ resource "azurerm_static_web_app" "main" {
 # Note: Requires DNS CNAME/TXT records to be set up manually
 # resource "azurerm_static_web_app_custom_domain" "main" {
 #   static_web_app_id = azurerm_static_web_app.main.id
-#   domain_name       = "gencolink.com"
+#   domain_name       = "jencolink.com"
 # }
 
 # Custom domain (uncomment once DNS CNAME/TXT records point to the SWA default hostname —
 # applying this before DNS is configured fails validation)
 # resource "azurerm_static_web_app_custom_domain" "www" {
 #   static_web_app_id = azurerm_static_web_app.main.id
-#   domain_name       = "www.gencolink.com"
+#   domain_name       = "www.jencolink.com"
 #   validation_type   = "cname-delegation"
 # }

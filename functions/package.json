@@ -1,5 +1,5 @@
 {
-  "name": "gencolink-functions",
+  "name": "jencolink-functions",
   "version": "2.0.0",
   "description": "Serverless backend for Gencolink — contact-email notifications via Azure Communication Services",
   "scripts": {
