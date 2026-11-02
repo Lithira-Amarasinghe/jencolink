@@ -640,17 +640,16 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       const shift = this.letterShifts[i];
       const slot = this.letterSlots[i];
       if (!shift || !slot) continue;
-      // A short horizontal lead keeps each letter on the same baseline.
-      const lag = Math.min(i, 8) * 0.006;
-      const letterX = inOutCubic(span(p, 0.04 + lag, (stacked ? 0.62 : 0.46) + lag));
+      // Size and horizontal spacing share one clock, so the word shrinks
+      // as a single word instead of packing together while still large.
+      const fit = inOutCubic(span(p, 0.04, stacked ? 0.62 : 0.58));
       const letterY = inOutCubic(span(p, stacked ? 0.04 : 0.3, stacked ? 0.64 : 0.68));
-      const sizeT = inOutCubic(span(p, 0.06, stacked ? 0.62 : 0.6));
-      if (letterX > 0.995 && letterY > 0.995 && sizeT > 0.995) {
+      if (fit > 0.995 && letterY > 0.995) {
         slot.style.transform = '';
         continue;
       }
-      const scale = shift.scale + (1 - shift.scale) * sizeT;
-      const x = shift.x * (1 - letterX);
+      const scale = shift.scale + (1 - shift.scale) * fit;
+      const x = shift.x * (1 - fit);
       const y = shift.y * (1 - letterY);
       slot.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
     }
