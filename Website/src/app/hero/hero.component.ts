@@ -92,8 +92,8 @@ const CHROME_END = 0.96;
 /**
  * Scroll-attached hero. On load the mark and wordmark sit as a centered
  * title card. Scrolling (and scrolling back) scrubs one pinned sequence.
- * The mark keeps its original shape the whole way. Letters travel into the
- * headline, then the mission and practices assemble. Once the hero is
+ * The mark keeps its original shape. The wordmark arrives large, then eases
+ * down to the headline that sits with the mission. Once the hero is
  * seated, a hover (desktop) or a tap (touch and keyboard) opens the chain.
  * The logo does not tilt.
  * Reduced motion skips the pin and shows the resting hero immediately.
@@ -564,10 +564,15 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
 
     const introMarkW = Math.min(stage.width * 0.34, stage.height * 0.36, 300);
     const markScale = clamp(introMarkW / markBox.width, 0.82, 2.15);
-    const introWordW = Math.min(stage.width * 0.74, Math.max(wordBox.width * 0.8, 240));
-    const wordScale = clamp(introWordW / wordBox.width, 0.66, 1);
-    const gap = clamp(stage.height * 0.03, 16, 40);
+    // Larger than the seated headline, but never wider than the stage or so
+    // tall that it crowds the mark. Scroll eases this back to scale 1.
+    const margin = clamp(stage.width * 0.07, 24, 88);
+    const widthCap = Math.max(wordBox.width, stage.width - margin * 2);
+    const gap = clamp(stage.height * 0.032, 18, 40);
     const markH = markBox.height * markScale;
+    const heightCap = Math.max(wordBox.height, stage.height - markH - gap - stage.height * 0.16);
+    let wordScale = Math.min(1.58, widthCap / wordBox.width, heightCap / wordBox.height);
+    wordScale = clamp(wordScale, 1, 1.58);
     const wordH = wordBox.height * wordScale;
     const groupH = markH + gap + wordH;
     const top = clamp(
@@ -639,11 +644,12 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       const lag = Math.min(i, 8) * 0.006;
       const letterX = inOutCubic(span(p, 0.04 + lag, (stacked ? 0.62 : 0.46) + lag));
       const letterY = inOutCubic(span(p, stacked ? 0.04 : 0.3, stacked ? 0.64 : 0.68));
-      if (letterX > 0.995 && letterY > 0.995) {
+      const sizeT = inOutCubic(span(p, 0.06, stacked ? 0.62 : 0.6));
+      if (letterX > 0.995 && letterY > 0.995 && sizeT > 0.995) {
         slot.style.transform = '';
         continue;
       }
-      const scale = shift.scale + (1 - shift.scale) * letterX;
+      const scale = shift.scale + (1 - shift.scale) * sizeT;
       const x = shift.x * (1 - letterX);
       const y = shift.y * (1 - letterY);
       slot.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
