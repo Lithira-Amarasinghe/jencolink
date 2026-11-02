@@ -27,35 +27,29 @@ echo "$SUBSCRIPTION_ID"
 ```
 
 If an app with that name already exists, skip `az ad app create` and reuse
-its app id. Terraform creates resource group `jencolink` and grants this app
-**Contributor** on it when `github_actions_client_id` is set.
-GitHub sends the owner id and repository id in the subject.
+its app id. GitHub sends the owner id and repository id in the subject.
 If a federated credential already exists, edit its subject to the value
 above. It must match exactly, including the numbers.
 
-## 2. GitHub secrets
+## 2. Hand the app to Terraform
 
-Repository → Settings → Secrets and variables → Actions:
+Copy the Application (client) ID into `github_actions_client_id` in
+`terraform.tfvars`. Apply then does the rest:
 
-| Secret | Value |
-|--------|--------|
-| `AZURE_CLIENT_ID` | app id (`APP_ID`) |
-| `AZURE_TENANT_ID` | tenant id |
-| `AZURE_SUBSCRIPTION_ID` | subscription id |
+- Creates resource group `jencolink`.
+- Grants this app **Contributor** on that group.
+- Grants this app **Key Vault Secrets User** on the vault. This is the
+  permission that lets the workflow read secrets. Contributor does not.
+- Writes `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID`
+  to GitHub Actions secrets.
 
-Terraform writes the other GitHub secrets (resource group, vault name, site
-name, deploy token).
-
-## 3. Let the workflow read Key Vault
-
-Contributor does not allow reading secret values. Either set
-`github_actions_client_id` in `terraform.tfvars` to `APP_ID` before apply,
-or after the vault exists:
+Do not add those roles in the portal. A second assignment for the same role
+makes apply stop. If one was already added, delete it and run apply again:
 
 ```bash
-VAULT_ID=$(az keyvault show -n YOUR_VAULT_NAME -g jencolink --query id -o tsv)
-az role assignment create \
-  --assignee "$APP_ID" \
-  --role "Key Vault Secrets User" \
-  --scope "$VAULT_ID"
+APP_ID=$(az ad app list --display-name "jencolink-github-actions" --query "[0].appId" -o tsv)
+SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+SCOPE="/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/jencolink"
+
+az role assignment delete --assignee "$APP_ID" --role Contributor --scope "$SCOPE"
 ```

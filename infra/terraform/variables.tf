@@ -45,7 +45,7 @@ variable "tags" {
 }
 
 variable "github_actions_client_id" {
-  description = "Application (client) ID of the GitHub Actions OIDC app (the same value as the AZURE_CLIENT_ID GitHub secret). When set, Terraform grants that app Key Vault Secrets User so the website workflow can read secrets. Leave empty to assign the role yourself."
+  description = "Application (client) ID of the GitHub Actions app registration. Required. Apply grants that app Contributor on the website group and Key Vault Secrets User on the vault, and writes AZURE_CLIENT_ID from this value."
   type        = string
   default     = ""
 }

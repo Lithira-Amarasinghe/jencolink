@@ -1,7 +1,7 @@
 # Jencolink website infrastructure.
 #
 # Azure hosts only the static site and a Key Vault. Content lives in Sanity.
-# Contact messages go to Web3Forms from the browser. The three content
+# Contact messages go to Web3Forms from the browser. The four content
 # secrets are created here as placeholders. Set their values in the Azure
 # portal. Later applies do not overwrite those values.
 
@@ -9,6 +9,13 @@ resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
   location = var.primary_location
   tags     = local.common_tags
+
+  lifecycle {
+    precondition {
+      condition     = var.github_actions_client_id != ""
+      error_message = "Set github_actions_client_id in terraform.tfvars to the app registration's Application (client) ID. Apply uses it to grant the GitHub workflow access."
+    }
+  }
 }
 
 locals {
@@ -99,34 +106,52 @@ resource "azurerm_key_vault_secret" "manual" {
   depends_on = [time_sleep.key_vault_rbac]
 }
 
-# Optional. When github_actions_client_id is set, the GitHub OIDC app can
-# manage resources in this group and read the vault during deploy.
-# Contributor does not include reading secret values.
+# The GitHub workflow logs in as this app. Contributor lets it work inside
+# the website group. Key Vault Secrets User is the separate permission that
+# lets it read secret values. Assign both here so they are not added by hand.
 data "azuread_service_principal" "github_actions" {
-  count     = var.github_actions_client_id != "" ? 1 : 0
   client_id = var.github_actions_client_id
 }
 
+data "azurerm_client_config" "current" {}
+
 resource "azurerm_role_assignment" "github_actions_contributor" {
-  count                = var.github_actions_client_id != "" ? 1 : 0
-  scope                = azurerm_resource_group.main.id
-  role_definition_name = "Contributor"
-  principal_id         = data.azuread_service_principal.github_actions[0].object_id
+  scope                            = azurerm_resource_group.main.id
+  role_definition_name             = "Contributor"
+  principal_id                     = data.azuread_service_principal.github_actions.object_id
+  skip_service_principal_aad_check = true
 }
 
 resource "azurerm_role_assignment" "github_actions_key_vault_secrets_user" {
-  count                = var.github_actions_client_id != "" ? 1 : 0
-  scope                = module.key_vault.vault_id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = data.azuread_service_principal.github_actions[0].object_id
+  scope                            = module.key_vault.vault_id
+  role_definition_name             = "Key Vault Secrets User"
+  principal_id                     = data.azuread_service_principal.github_actions.object_id
+  skip_service_principal_aad_check = true
 }
 
 # ============================================================
 # GITHUB ACTIONS SECRETS
-# Names and the Static Web App deploy token. Content secrets stay in
-# Key Vault and are read at deploy time. OIDC ids stay manual:
-# AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID.
+# OIDC login ids, resource names, and the Static Web App deploy token.
+# Sanity and Web3Forms values stay in Key Vault and are read at deploy time.
 # ============================================================
+resource "github_actions_secret" "azure_client_id" {
+  repository  = var.github_repository
+  secret_name = "AZURE_CLIENT_ID"
+  value       = data.azuread_service_principal.github_actions.client_id
+}
+
+resource "github_actions_secret" "azure_tenant_id" {
+  repository  = var.github_repository
+  secret_name = "AZURE_TENANT_ID"
+  value       = data.azurerm_client_config.current.tenant_id
+}
+
+resource "github_actions_secret" "azure_subscription_id" {
+  repository  = var.github_repository
+  secret_name = "AZURE_SUBSCRIPTION_ID"
+  value       = data.azurerm_client_config.current.subscription_id
+}
+
 resource "github_actions_secret" "azure_resource_group" {
   repository  = var.github_repository
   secret_name = "AZURE_RESOURCE_GROUP"

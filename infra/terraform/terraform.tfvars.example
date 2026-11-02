@@ -21,9 +21,8 @@ primary_location = "eastus2"
 github_owner      = "Lithira-Amarasinghe"
 github_repository = "jencolink"
 
-# Same value as the AZURE_CLIENT_ID GitHub secret.
-# When set, apply grants that app "Key Vault Secrets User".
-# Leave empty and assign that role yourself if you prefer.
+# Application (client) ID of the jencolink-github-actions app registration.
+# Apply grants that app its Azure roles and writes the OIDC GitHub secrets.
 github_actions_client_id = ""
 
 tags = {
