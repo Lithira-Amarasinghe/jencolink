@@ -362,6 +362,15 @@ function publicBrand(value: string): string {
   return value.replaceAll('Gencolink', 'Jencolink');
 }
 
+function plainText(value: unknown, fallback = ''): string {
+  const text = typeof value === 'string' ? value.trim() : '';
+  return text || fallback;
+}
+
+function brandText(value: unknown, fallback = ''): string {
+  return publicBrand(plainText(value, fallback));
+}
+
 type SanityConfig = {
   __SANITY_PROJECT_ID__?: string;
   __SANITY_DATASET__?: string;
@@ -433,9 +442,11 @@ export class SiteContentService {
     try {
       const dataset = (globalThis as SanityConfig).__SANITY_DATASET__?.trim() || 'production';
       const query = encodeURIComponent(CONTENT_QUERY);
+      // api.sanity.io returns the published document on the next request.
+      // apicdn.sanity.io can keep serving the previous email and copy after Publish.
       const url = local
-        ? `/sanity-api/v2025-01-01/data/query/${dataset}?query=${query}`
-        : `https://${projectId}.apicdn.sanity.io/v2025-01-01/data/query/${dataset}?query=${query}`;
+        ? `/sanity-api/v2025-01-01/data/query/${dataset}?perspective=published&query=${query}`
+        : `https://${projectId}.api.sanity.io/v2025-01-01/data/query/${dataset}?perspective=published&query=${query}`;
       const response = await fetch(url, {
         headers: { Accept: 'application/json' },
         cache: 'no-store',
@@ -451,12 +462,7 @@ export class SiteContentService {
       this.content.set(this.fromSanity(result));
     } catch (error) {
       if (requestId !== this.requestId) return;
-      if (this.localPreview()) {
-        console.warn(
-          'Sanity content was not applied. The page is showing the built-in copy.',
-          error,
-        );
-      }
+      console.warn('Sanity content was not applied. The page is showing the built-in copy.', error);
     } finally {
       if (requestId === this.requestId) this.loading.set(false);
     }
@@ -467,7 +473,7 @@ export class SiteContentService {
   }
 
   private watchForPublishedEdits(): void {
-    if (this.watchingEdits || !this.localPreview() || typeof document === 'undefined') return;
+    if (this.watchingEdits || typeof document === 'undefined') return;
     this.watchingEdits = true;
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') void this.load();
@@ -479,47 +485,49 @@ export class SiteContentService {
     return id ? id : null;
   }
 
-  private fromSanity(result: Record<string, unknown>): SiteContent {
+  fromSanity(result: Record<string, unknown>): SiteContent {
     const services = this.list<ServiceContent>(result['services'], (row) => ({
       icon: row['icon'] as ServiceContent['icon'],
-      title: String(row['title'] ?? ''),
-      body: String(row['body'] ?? ''),
-      items: strings(row['items']),
+      title: brandText(row['title']),
+      body: brandText(row['body']),
+      items: strings(row['items']).map((item) => publicBrand(item)),
     }));
     const products = this.list<ProductContent>(result['products'], (row) => ({
       icon: row['icon'] as ProductContent['icon'],
-      title: String(row['title'] ?? ''),
-      body: String(row['body'] ?? ''),
+      title: brandText(row['title']),
+      body: brandText(row['body']),
     }));
     const values = this.list<ValueContent>(result['values'], (row) => ({
-      title: String(row['title'] ?? ''),
-      body: String(row['body'] ?? ''),
+      title: brandText(row['title']),
+      body: brandText(row['body']),
     }));
     const faqs = this.list<FaqContent>(result['faqs'], (row) => ({
-      question: String(row['question'] ?? ''),
-      answer: String(row['answer'] ?? ''),
+      question: brandText(row['question']),
+      answer: brandText(row['answer']),
     }));
     const caseStudies = this.list<CaseStudyContent>(result['caseStudies'], (row) => ({
-      industry: String(row['industry'] ?? ''),
-      title: String(row['title'] ?? ''),
-      image: String(row['image'] ?? ''),
-      summary: String(row['summary'] ?? ''),
+      industry: brandText(row['industry']),
+      title: brandText(row['title']),
+      image: plainText(row['image']),
+      summary: brandText(row['summary']),
       stats: Array.isArray(row['stats'])
         ? row['stats'].map((stat) => {
             const item = stat as Record<string, unknown>;
-            return { value: String(item['value'] ?? ''), label: String(item['label'] ?? '') };
+            return { value: plainText(item['value']), label: brandText(item['label']) };
           })
         : [],
     }));
 
     return {
       hero: this.section(result['hero'], defaultContent.hero, (row) => ({
-        title: String(row['title']),
-        titleHighlight: String(row['titleHighlight']),
-        description: String(row['description']),
-        primaryCta: String(row['primaryCta']),
-        secondaryCta: String(row['secondaryCta']),
-        proofPoints: strings(row['proofPoints']),
+        title: brandText(row['title'], defaultContent.hero.title),
+        titleHighlight: brandText(row['titleHighlight'], defaultContent.hero.titleHighlight),
+        description: brandText(row['description'], defaultContent.hero.description),
+        primaryCta: brandText(row['primaryCta'], defaultContent.hero.primaryCta),
+        secondaryCta: brandText(row['secondaryCta'], defaultContent.hero.secondaryCta),
+        proofPoints: strings(row['proofPoints']).length
+          ? strings(row['proofPoints']).map((item) => publicBrand(item))
+          : defaultContent.hero.proofPoints,
       })),
       services: services.length ? services : defaultContent.services,
       products: products.length ? products : defaultContent.products,
@@ -527,46 +535,46 @@ export class SiteContentService {
       values: values.length ? values : defaultContent.values,
       faqs: faqs.length ? faqs : defaultContent.faqs,
       whySection: this.section(result['whySection'], defaultContent.whySection, (row) => ({
-        eyebrow: publicBrand(String(row['eyebrow'] ?? '')),
-        heading: String(row['heading']),
-        description: publicBrand(String(row['description'] ?? '')),
+        eyebrow: brandText(row['eyebrow'], defaultContent.whySection.eyebrow),
+        heading: brandText(row['heading'], defaultContent.whySection.heading),
+        description: brandText(row['description'], defaultContent.whySection.description),
       })),
       faqSection: this.section(result['faqSection'], defaultContent.faqSection, (row) => ({
-        eyebrow: String(row['eyebrow'] ?? ''),
-        heading: String(row['heading']),
+        eyebrow: brandText(row['eyebrow'], defaultContent.faqSection.eyebrow),
+        heading: brandText(row['heading'], defaultContent.faqSection.heading),
       })),
       servicesSection: this.section(
         result['servicesSection'],
         defaultContent.servicesSection,
         (row) => ({
-          eyebrow: String(row['eyebrow'] ?? ''),
-          heading: String(row['heading']),
-          description: String(row['description'] ?? ''),
+          eyebrow: brandText(row['eyebrow'], defaultContent.servicesSection.eyebrow),
+          heading: brandText(row['heading'], defaultContent.servicesSection.heading),
+          description: brandText(row['description'], defaultContent.servicesSection.description),
         }),
       ),
       contactSection: this.section(
         result['contactSection'],
         defaultContent.contactSection,
         (row) => ({
-          eyebrow: String(row['eyebrow'] ?? ''),
-          heading: String(row['heading']),
-          description: String(row['description'] ?? ''),
+          eyebrow: brandText(row['eyebrow'], defaultContent.contactSection.eyebrow),
+          heading: brandText(row['heading'], defaultContent.contactSection.heading),
+          description: brandText(row['description'], defaultContent.contactSection.description),
         }),
       ),
       companyDetails: this.section(
         result['companyDetails'],
         defaultContent.companyDetails,
         (row) => ({
-          brandName: 'Jencolink',
-          tagline: String(row['tagline'] ?? ''),
-          email: String(row['email'] ?? ''),
-          phonePrimary: String(row['phonePrimary'] ?? ''),
-          phoneSecondary: String(row['phoneSecondary'] ?? ''),
-          linkedinUrl: String(row['linkedinUrl'] ?? ''),
-          githubUrl: String(row['githubUrl'] ?? ''),
-          facebookUrl: String(row['facebookUrl'] ?? ''),
-          instagramUrl: String(row['instagramUrl'] ?? ''),
-          tiktokUrl: String(row['tiktokUrl'] ?? ''),
+          brandName: brandText(row['brandName'], defaultContent.companyDetails.brandName),
+          tagline: brandText(row['tagline'], defaultContent.companyDetails.tagline),
+          email: plainText(row['email'], defaultContent.companyDetails.email),
+          phonePrimary: plainText(row['phonePrimary'], defaultContent.companyDetails.phonePrimary),
+          phoneSecondary: plainText(row['phoneSecondary']),
+          linkedinUrl: plainText(row['linkedinUrl']),
+          githubUrl: plainText(row['githubUrl']),
+          facebookUrl: plainText(row['facebookUrl']),
+          instagramUrl: plainText(row['instagramUrl']),
+          tiktokUrl: plainText(row['tiktokUrl']),
         }),
       ),
     };
