@@ -2,25 +2,37 @@
   display: block;
 }
 
-.hero {
+.hero-stage {
   position: relative;
-  min-height: 100vh;
-  min-height: 100svh;
+}
+
+.hero-pin {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  height: 100svh;
   background: var(--bg);
   isolation: isolate;
   overflow: hidden;
+}
+
+.hero-fore {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
 .hero-split {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  /* The left column runs to the page edge so a centered mark has the same
+     gap on its left and on its right, up to the copy. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
   align-items: center;
-  column-gap: clamp(16px, 3.2vw, 72px);
-  min-height: 100vh;
-  min-height: 100svh;
-  padding: clamp(96px, 14vh, 156px) clamp(18px, 4.5vw, 96px) clamp(40px, 7vh, 96px);
+  column-gap: 0;
+  height: 100%;
+  padding: clamp(96px, 14vh, 156px) clamp(18px, 4.5vw, 96px) clamp(40px, 7vh, 96px) 0;
 }
 
 .hero-copy {
@@ -97,6 +109,99 @@
   }
 }
 
+.hero-horizon,
+.hero-meter,
+.hero-skip {
+  display: none;
+}
+
+:host-context(.hero-sequencing) .hero-horizon {
+  display: block;
+  position: absolute;
+  left: 50%;
+  z-index: 2;
+  width: min(220px, 36vw);
+  height: 1px;
+  margin-left: calc(min(220px, 36vw) / -2);
+  background: var(--accent);
+  transform: scaleX(calc(0.4 + var(--hero-p, 0) * 1.8));
+  transform-origin: center center;
+  opacity: clamp(0, calc((0.16 - var(--hero-p, 0)) / 0.12), 1);
+  pointer-events: none;
+}
+
+:host-context(.hero-sequencing) .hero-meter {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  opacity: clamp(0, calc((0.76 - var(--hero-p, 0)) / 0.24), 1);
+  pointer-events: none;
+}
+
+.hero-meter-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-body);
+}
+
+.hero-meter-track {
+  position: relative;
+  width: 76px;
+  height: 1px;
+  background: var(--line-1);
+}
+
+.hero-meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  background: var(--accent);
+  transform: scaleX(var(--hero-p, 0));
+  transform-origin: left center;
+}
+
+:host-context(.hero-sequencing) .hero-skip {
+  position: absolute;
+  z-index: 4;
+  top: 16px;
+  left: 16px;
+  display: inline-block;
+  padding: 10px 14px;
+  border: 1px solid var(--line-1);
+  background: var(--bg);
+  color: var(--text-hi);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+:host-context(.hero-sequencing) .hero-skip:focus-visible {
+  clip: auto;
+  clip-path: none;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .hero-word {
   position: relative;
   margin: 0;
@@ -109,14 +214,33 @@
   letter-spacing: -0.04em;
   color: var(--text-hi);
   white-space: nowrap;
+  transform-origin: center center;
+}
+
+:host-context(.hero-sequencing) .hero-word,
+:host-context(.hero-sequencing) .hero-emblem-in {
+  will-change: transform;
+}
+
+.hero-word-float {
+  display: inline-block;
 }
 
 .hero-letters {
   display: inline-flex;
 }
 
-.hero-letter {
+.hero-letter,
+.hero-letter-in {
   display: inline-block;
+}
+
+.hero-letter {
+  transform-origin: center center;
+}
+
+.hero-letter--gap {
+  width: 0.28em;
 }
 
 .hero-mission {
@@ -134,12 +258,15 @@
 
 .mission-word {
   display: inline-block;
+}
+
+.mission-word-in {
+  display: inline-block;
   color: color-mix(in srgb, var(--accent) calc(var(--near, 0) * 72%), var(--mission));
   transform: translateY(calc(var(--near, 0) * -0.08em));
   transition:
     color 160ms linear,
     transform 280ms var(--ease-out);
-  cursor: default;
 }
 
 .hero-tags {
@@ -226,7 +353,10 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  align-self: center;
+  justify-self: center;
   order: -1;
+  width: min(100%, clamp(148px, 30vw, 460px));
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -235,21 +365,28 @@
   color: inherit;
   font: inherit;
   text-align: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.hero-emblem-in,
-.hero-emblem-shift {
+.hero-emblem:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 8px;
+}
+
+.hero-emblem-float {
   display: block;
+  width: 100%;
 }
 
 .hero-emblem-in {
   position: relative;
-  width: min(100%, clamp(148px, 30vw, 460px));
+  display: block;
+  width: 100%;
+  transform-origin: center center;
 }
 
-.hero-emblem-shift {
-  transform: rotate(var(--mark-turn, 0deg));
-  transform-origin: 50% 46%;
+.hero-touch-hint {
+  display: none;
 }
 
 .hero-more {
@@ -269,36 +406,24 @@
   display: none !important;
 }
 
-.hero-drag-hint {
-  display: none;
-  margin: 16px 0 0;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-
-.hero-drag-hint.is-gone {
-  display: none;
-}
-
 @media (max-width: 700px) {
   .hero-split {
     grid-template-columns: 1fr;
     align-items: start;
-    align-content: start;
+    align-content: center;
     row-gap: clamp(22px, 4vh, 40px);
     padding-top: clamp(88px, 12vh, 112px);
+    padding-inline: clamp(18px, 6vw, 28px);
   }
 
   .hero-emblem {
     justify-self: center;
     justify-content: center;
     width: min(58vw, 220px);
+    flex-direction: column;
   }
 
+  .hero-emblem-float,
   .hero-emblem-in {
     width: 100%;
   }
@@ -332,86 +457,32 @@
   .hero-more {
     margin-inline: auto;
   }
-
-  .hero-drag-hint {
-    width: 100%;
-    margin-top: 12px;
-    text-align: center;
-    letter-spacing: 0.1em;
-  }
 }
 
-@media (pointer: coarse), (hover: none) {
+@media (hover: none) and (pointer: coarse) {
   .hero-emblem {
     flex-direction: column;
   }
 
-  .hero-drag-hint {
+  .hero-touch-hint {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 12px);
     display: block;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .hero-letter {
-    animation: hero-letter-in 0.72s var(--ease-out) calc(var(--i, 0) * 0.055s) both;
-  }
-
-  .mission-word {
-    animation: mission-word-in 0.62s var(--ease-out) calc(0.62s + var(--i, 0) * 0.09s) both;
-  }
-
-  .hero-tags button {
-    animation: hero-tag-in 0.6s var(--ease-out) calc(1.35s + var(--i, 0) * 0.07s) both;
+    width: max-content;
+    margin-top: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--text-body);
+    transform: translateX(-50%);
   }
 
-  .hero-emblem-in {
-    animation: hero-mark-in 1.05s var(--ease-out) 0.22s both;
-  }
-}
-
-@keyframes hero-letter-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.42em);
-    filter: blur(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-    filter: blur(0);
-  }
-}
-
-@keyframes mission-word-in {
-  from {
-    clip-path: inset(0 100% -0.12em 0);
-    opacity: 0;
-  }
-  to {
-    clip-path: inset(0 0 -0.12em 0);
-    opacity: 1;
-  }
-}
-
-@keyframes hero-tag-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes hero-mark-in {
-  from {
-    opacity: 0;
-    transform: translate3d(-48px, 0, 0);
-  }
-  to {
-    opacity: 1;
-    transform: none;
+  .hero-touch-hint[data-hidden='true'] {
+    display: none;
   }
 }
 
@@ -420,18 +491,9 @@
     display: none;
   }
 
-  .hero-letter,
-  .mission-word,
-  .hero-tags button,
-  .hero-emblem-in {
-    animation: none;
-  }
-
-  .hero-letter,
-  .mission-word {
-    opacity: 1;
-    filter: none;
-    clip-path: none;
-    transform: none;
+  :host-context(.hero-sequencing) .hero-horizon,
+  :host-context(.hero-sequencing) .hero-meter,
+  :host-context(.hero-sequencing) .hero-skip {
+    display: none;
   }
 }

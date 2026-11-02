@@ -147,18 +147,21 @@ export class App implements AfterViewInit, OnDestroy {
     // Header state is independent of content — set up once.
     this.ngZone.runOutsideAngular(() => {
       this.headerTrigger = ScrollTrigger.create({
-        start: 24,
+        start: 0,
+        end: 'max',
         onUpdate: (self) => {
-          const scrolled = self.scroll() > 24;
+          const stage = document.querySelector<HTMLElement>('.hero-stage');
+          const travel = stage ? stage.offsetHeight - window.innerHeight : 0;
+          // Stay transparent across the pinned hero. Glass starts once the
+          // sequence has released and the next section is coming up. With no
+          // pin (reduced motion) this falls back to a few pixels of scroll.
+          const threshold = travel > 48 ? travel + 16 : 24;
+          const scrolled = self.scroll() > threshold;
           if (scrolled !== this.headerScrolled()) {
             this.ngZone.run(() => this.headerScrolled.set(scrolled));
           }
         },
       });
-
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        gsap.from('.site-header', { autoAlpha: 0, y: -16, duration: 0.7, delay: 0.2 });
-      }
     });
   }
 

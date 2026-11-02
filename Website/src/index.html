@@ -29,6 +29,18 @@
         } catch (e) {}
       })();
     </script>
+    <script>
+      (function () {
+        try {
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          document.documentElement.classList.add('hero-sequencing');
+          setTimeout(function () {
+            var root = document.documentElement;
+            if (!root.classList.contains('hero-ready')) root.classList.remove('hero-sequencing');
+          }, 4000);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <app-root></app-root>
