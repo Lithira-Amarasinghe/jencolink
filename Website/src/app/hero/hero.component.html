@@ -34,7 +34,8 @@
             class="hero-mission"
             #mission
             (pointermove)="onMissionMove($event)"
-            (pointerleave)="clearMission()"
+            (pointerdown)="onMissionMove($event)"
+            (pointerleave)="clearMission($event)"
           >
             @for (missionWord of missionWords; track $index) {
               <span class="mission-word" [style.--i]="$index"
@@ -72,13 +73,32 @@
           </button>
         </div>
 
-        <div class="hero-emblem" aria-hidden="true">
+        <button
+          type="button"
+          class="hero-emblem"
+          [attr.aria-pressed]="chainOpen()"
+          [attr.aria-disabled]="chainSeated() ? null : 'true'"
+          [attr.tabindex]="chainSeated() ? null : -1"
+          [attr.aria-label]="chainOpen() ? 'Close the chain mark' : 'Open the chain mark'"
+          (click)="onMarkClick()"
+          (focus)="onMarkFocus()"
+          (blur)="onMarkBlur()"
+          (pointerenter)="onMarkEnter($event)"
+          (pointerleave)="onMarkLeave($event)"
+        >
           <span class="hero-emblem-float" #markFloat>
             <span class="hero-emblem-in" #mark>
               <app-logo-mark />
             </span>
           </span>
-        </div>
+          <span
+            class="hero-touch-hint"
+            aria-hidden="true"
+            [attr.data-hidden]="touchHintHidden() ? 'true' : 'false'"
+          >
+            Tap the mark
+          </span>
+        </button>
       </div>
 
       <div class="hero-meter" #meter aria-hidden="true">

@@ -49,6 +49,26 @@ interface LockupLayout {
   horizonTop: number;
 }
 
+interface LetterShift {
+  x: number;
+  y: number;
+  scale: number;
+}
+
+/** ViewBox units. Top link, middle link, bottom link. +y is down the screen. */
+const LINK_OPEN = [
+  { x: 28, y: -34 },
+  { x: 0, y: 0 },
+  { x: -28, y: 34 },
+];
+
+/** Pulled toward the joint until the load reveal finishes. */
+const LINK_GATHER = [
+  { x: -12, y: 16 },
+  { x: 0, y: 0 },
+  { x: 12, y: -16 },
+];
+
 const MISSION = [
   'A',
   'better',
@@ -79,10 +99,11 @@ const CHROME_END = 0.96;
 /**
  * Scroll-attached hero. On load the mark and wordmark sit as a centered
  * title card. Scrolling (and scrolling back) scrubs one pinned sequence:
- * the lockup travels into the resting hero, the mission and practices
- * assemble, and the site header comes in as the sequence ends.
- * The logo does not tilt. Reduced motion skips the pin and shows the
- * resting hero immediately.
+ * the chain opens, the letters travel one by one into the headline, then
+ * the links close as the mission and practices assemble. Scrolling back
+ * reverses it. Once the hero is seated, a hover (desktop) or a tap
+ * (touch and keyboard) opens the chain again. The logo does not tilt.
+ * Reduced motion skips the pin and shows the resting hero immediately.
  */
 @Component({
   selector: 'app-hero',
@@ -132,6 +153,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   readonly activeLane = signal<Practice | null>(null);
   readonly noteOpen = signal(false);
   readonly noteText = signal('');
+  /** Latched open by click, tap, or keyboard. Hover previews without latching. */
+  readonly chainOpen = signal(false);
+  readonly chainDiscovered = signal(false);
+  readonly chainSeated = signal(false);
+  readonly touchHintHidden = computed(() => !this.chainSeated() || this.chainDiscovered());
 
   private reducedMotion = false;
   private armed = false;
@@ -156,6 +182,16 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private noteNode: HTMLElement | null = null;
   private moreNode: HTMLElement | null = null;
   private letterNodes: HTMLElement[] = [];
+  private letterSlots: HTMLElement[] = [];
+  private letterShifts: LetterShift[] = [];
+  private linkEls: SVGElement[] = [];
+  private linkReveal = [1, 1, 1];
+  private scrollOpen = 0;
+  private userOpen = 0;
+  private hoverOpen = false;
+  private pointerOver = false;
+  private keyFocus = false;
+  private pinnedOpen = false;
   private headerEl: HTMLElement | null = null;
   private layout: LockupLayout = {
     valid: false,
@@ -189,6 +225,8 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
 
     if (this.reducedMotion) {
       this.clearSequenceMode();
+      this.cacheLinks();
+      this.chainSeated.set(true);
       this.lastBrand = this.brandName();
       this.armed = true;
       return;
@@ -216,6 +254,15 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
         this.clearMotionStyles();
         this.clearSequenceMode();
         this.introPlaying = false;
+        this.pinnedOpen = false;
+        this.pointerOver = false;
+        this.keyFocus = false;
+        this.hoverOpen = false;
+        this.progress = 1;
+        this.ngZone.run(() => {
+          this.chainOpen.set(false);
+          this.chainSeated.set(true);
+        });
       } else {
         document.documentElement.classList.add('hero-sequencing');
         this.bootSequence();
@@ -293,7 +340,8 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.paintWords(words, best);
   }
 
-  clearMission(): void {
+  clearMission(event?: PointerEvent): void {
+    if (event?.pointerType === 'touch') return;
     const mission = this.mission()?.nativeElement;
     if (!mission) return;
     this.paintWords([...mission.querySelectorAll<HTMLElement>('.mission-word')], -1);
@@ -310,10 +358,113 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     document.getElementById('services')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  /** Desktop hover previews the open chain. Touch and keyboard latch it. */
+  onMarkEnter(event: PointerEvent): void {
+    if (event.pointerType !== 'mouse' || !this.isSeated()) return;
+    this.pointerOver = true;
+    this.syncHover();
+  }
+
+  onMarkLeave(event: PointerEvent): void {
+    if (event.pointerType !== 'mouse') return;
+    this.pointerOver = false;
+    this.syncHover();
+  }
+
+  onMarkFocus(): void {
+    if (!this.isSeated()) return;
+    this.keyFocus = true;
+    this.syncHover();
+  }
+
+  onMarkBlur(): void {
+    this.keyFocus = false;
+    this.syncHover();
+  }
+
+  onMarkClick(): void {
+    if (!this.isSeated()) return;
+    this.pinnedOpen = !this.pinnedOpen;
+    this.chainOpen.set(this.pinnedOpen);
+    this.chainDiscovered.set(true);
+    if (this.reducedMotion) this.paintLinks();
+  }
+
+  private syncHover(): void {
+    const next = (this.pointerOver || this.keyFocus) && this.isSeated();
+    if (next === this.hoverOpen) return;
+    this.hoverOpen = next;
+    if (this.reducedMotion) this.paintLinks();
+  }
+
+  private isSeated(): boolean {
+    return this.reducedMotion || this.progress > 0.88;
+  }
+
+  private cacheLinks(): void {
+    const mark = this.mark()?.nativeElement;
+    this.linkEls = mark ? [...mark.querySelectorAll<SVGElement>('.logo-link')] : [];
+  }
+
+  /** 0.4 is a hover preview. 0.75 stays open after the pointer leaves. */
+  private userTarget(): number {
+    if (!this.isSeated()) return 0;
+    return Math.max(this.hoverOpen ? 0.4 : 0, this.pinnedOpen ? 0.75 : 0);
+  }
+
+  private paintLinks(): void {
+    const user = this.reducedMotion ? this.userTarget() : this.userOpen;
+    const open = Math.min(1, this.scrollOpen + user);
+    this.linkEls.forEach((el, index) => {
+      const reveal = this.linkReveal[index] ?? 1;
+      const spec = LINK_OPEN[index] ?? { x: 0, y: 0 };
+      const pull = LINK_GATHER[index] ?? { x: 0, y: 0 };
+      const gather = 1 - reveal;
+      const dx = spec.x * open + pull.x * gather;
+      const dy = spec.y * open + pull.y * gather;
+      el.setAttribute('transform', `translate(${dx.toFixed(2)} ${dy.toFixed(2)})`);
+      el.style.opacity = reveal.toFixed(3);
+    });
+  }
+
+  private syncSeat(): void {
+    const seated = this.isSeated();
+    if (!seated) {
+      this.pinnedOpen = false;
+      this.pointerOver = false;
+    }
+    this.hoverOpen = seated && (this.pointerOver || this.keyFocus);
+    const latch = seated && this.pinnedOpen;
+    if (latch === this.chainOpen() && seated === this.chainSeated()) return;
+    this.ngZone.run(() => {
+      if (this.chainOpen() !== latch) this.chainOpen.set(latch);
+      if (this.chainSeated() !== seated) this.chainSeated.set(seated);
+    });
+  }
+
+  private stepChain(): void {
+    if (this.reducedMotion) return;
+    const target = this.userTarget();
+    const delta = target - this.userOpen;
+    if (Math.abs(delta) < 0.0008) {
+      if (this.userOpen !== target) {
+        this.userOpen = target;
+        this.paintLinks();
+      }
+      return;
+    }
+    this.userOpen += delta * (delta < 0 ? 0.18 : 0.12);
+    this.paintLinks();
+  }
+
   private bootSequence(): void {
     this.destroySequence();
     if (this.reducedMotion || !isPlatformBrowser(this.platformId)) {
       this.clearSequenceMode();
+      if (this.reducedMotion) {
+        this.cacheLinks();
+        this.chainSeated.set(true);
+      }
       return;
     }
 
@@ -327,6 +478,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     }
 
     document.documentElement.classList.add('hero-sequencing');
+    this.cacheLinks();
     this.wordNodes = [...pin.querySelectorAll<HTMLElement>('.mission-word')];
     this.tagNodes = this.tagButtons().map((ref) => ref.nativeElement);
     this.noteNode = pin.querySelector<HTMLElement>('.hero-note-wrap');
@@ -385,25 +537,34 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     }
 
     this.measuring = true;
+    const slots = [...word.querySelectorAll<HTMLElement>('.hero-letter')];
     const previous = {
       mark: mark.style.transform,
       word: word.style.transform,
       markFloat: markFloat?.style.transform ?? '',
       wordFloat: wordFloat?.style.transform ?? '',
+      letters: slots.map((el) => el.style.transform),
     };
     mark.style.transform = 'none';
     word.style.transform = 'none';
     if (markFloat) markFloat.style.transform = 'none';
     if (wordFloat) wordFloat.style.transform = 'none';
+    slots.forEach((el) => {
+      el.style.transform = 'none';
+    });
     void pin.offsetWidth;
 
     const stage = pin.getBoundingClientRect();
     const markBox = mark.getBoundingClientRect();
     const wordBox = word.getBoundingClientRect();
+    const letterBoxes = slots.map((el) => el.getBoundingClientRect());
     mark.style.transform = previous.mark;
     word.style.transform = previous.word;
     if (markFloat) markFloat.style.transform = previous.markFloat;
     if (wordFloat) wordFloat.style.transform = previous.wordFloat;
+    slots.forEach((el, index) => {
+      el.style.transform = previous.letters[index] ?? '';
+    });
 
     if (stage.width < 8 || stage.height < 8 || markBox.width < 8 || wordBox.width < 8) {
       this.layout.valid = false;
@@ -439,6 +600,19 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       horizonTop: top + markH + gap / 2,
     };
     if (horizon) horizon.style.top = `${this.layout.horizonTop.toFixed(1)}px`;
+
+    const wordCx = wordBox.left + wordBox.width / 2;
+    const wordCy = wordBox.top + wordBox.height / 2;
+    this.letterSlots = slots;
+    this.letterShifts = letterBoxes.map((box) => {
+      const cx = box.left + box.width / 2;
+      const cy = box.top + box.height / 2;
+      return {
+        x: midX + (cx - wordCx) * wordScale - cx,
+        y: wordIntroCy + (cy - wordCy) * wordScale - cy,
+        scale: wordScale,
+      };
+    });
     this.measuring = false;
   }
 
@@ -463,9 +637,33 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     const travelX = inOutCubic(span(p, 0.04, stacked ? 0.62 : 0.44));
     const travelY = inOutCubic(span(p, stacked ? 0.04 : 0.32, stacked ? 0.62 : 0.66));
     const markScale = this.layout.markScale + (1 - this.layout.markScale) * travelX;
-    const wordScale = this.layout.wordScale + (1 - this.layout.wordScale) * travelX;
     mark.style.transform = `translate3d(${(this.layout.markX * (1 - travelX)).toFixed(2)}px, ${(this.layout.markY * (1 - travelY)).toFixed(2)}px, 0) scale(${markScale.toFixed(4)})`;
-    word.style.transform = `translate3d(${(this.layout.wordX * (1 - travelX)).toFixed(2)}px, ${(this.layout.wordY * (1 - travelY)).toFixed(2)}px, 0) scale(${wordScale.toFixed(4)})`;
+    // Letters carry their own travel. Transforming the heading as well would move them twice.
+    word.style.transform = '';
+    const count = Math.min(this.letterSlots.length, this.letterShifts.length);
+    for (let i = 0; i < count; i++) {
+      const shift = this.letterShifts[i];
+      const slot = this.letterSlots[i];
+      if (!shift || !slot) continue;
+      // A short horizontal lead keeps each letter on the same baseline.
+      const lag = Math.min(i, 8) * 0.006;
+      const letterX = inOutCubic(span(p, 0.04 + lag, (stacked ? 0.62 : 0.46) + lag));
+      const letterY = inOutCubic(span(p, stacked ? 0.04 : 0.3, stacked ? 0.64 : 0.68));
+      if (letterX > 0.995 && letterY > 0.995) {
+        slot.style.transform = '';
+        continue;
+      }
+      const scale = shift.scale + (1 - shift.scale) * letterX;
+      const x = shift.x * (1 - letterX);
+      const y = shift.y * (1 - letterY);
+      slot.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+    }
+
+    const opened = inOutCubic(span(p, 0.06, 0.28));
+    const shut = inOutCubic(span(p, 0.4, 0.68));
+    this.scrollOpen = opened * (1 - shut);
+    this.syncSeat();
+    this.paintLinks();
 
     this.wordNodes.forEach((node, index) => {
       this.writeReveal(node, reveal(p, MISSION_START + index * MISSION_STAGGER, MISSION_EACH), 18);
@@ -497,6 +695,8 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   private prepareIntro(): void {
+    this.linkReveal = [0, 0, 0];
+    this.paintLinks();
     for (const letter of this.letterNodes) {
       letter.style.opacity = '0';
       letter.style.transform = 'translate3d(0, 0.45em, 0)';
@@ -505,6 +705,8 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
 
   private snapIntro(): void {
     this.introPlaying = false;
+    this.linkReveal = [1, 1, 1];
+    this.paintLinks();
     const mark = this.mark()?.nativeElement;
     if (mark) mark.style.opacity = '';
     for (const letter of this.letterNodes) {
@@ -521,6 +723,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     if (!scene) return;
     this.stepField(scene, now);
     this.stepIntro(now);
+    this.stepChain();
     this.stepFloat();
   }
 
@@ -539,6 +742,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       return;
     }
     const t = (now - this.introStart) / 1000;
+    const order = [1, 0, 2];
+    order.forEach((linkIndex, step) => {
+      this.linkReveal[linkIndex] = outCubic(clamp((t - 0.04 - step * 0.09) / 0.55, 0, 1));
+    });
+    this.paintLinks();
     const count = Math.max(1, this.letterNodes.length);
     const stagger = Math.min(0.045, 0.42 / count);
     this.letterNodes.forEach((letter, index) => {
@@ -569,7 +777,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   private stepField(scene: HTMLElement, now: number): void {
-    const spread = 0.84 + this.progress * 0.16;
+    const spread = 0.84 + this.progress * 0.1 + Math.min(1, this.scrollOpen + this.userOpen) * 0.2;
     this.placeWashes(scene, now / 1000, (this.gx - 0.5) * 0.22, (this.gy - 0.42) * 0.18, spread);
     const follow = scene.querySelector<HTMLElement>('[data-wash="follow"]');
     if (!follow) return;
@@ -729,7 +937,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     if (!pin) return;
     pin.style.removeProperty('--hero-p');
     const nodes = pin.querySelectorAll<HTMLElement>(
-      '.hero-emblem-in, .hero-word, .hero-emblem-float, .hero-word-float, .hero-letter-in, .mission-word, .hero-tags button, .hero-mission, .hero-horizon, .hero-note-wrap, .hero-more',
+      '.hero-emblem-in, .hero-word, .hero-emblem-float, .hero-word-float, .hero-letter, .hero-letter-in, .mission-word, .hero-tags button, .hero-mission, .hero-horizon, .hero-note-wrap, .hero-more',
     );
     nodes.forEach((node) => {
       node.style.transform = '';
@@ -738,6 +946,14 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       node.style.top = '';
       if (node instanceof HTMLButtonElement) node.tabIndex = 0;
     });
+    this.cacheLinks();
+    for (const link of this.linkEls) {
+      link.removeAttribute('transform');
+      link.style.opacity = '';
+    }
+    this.scrollOpen = 0;
+    this.userOpen = 0;
+    this.linkReveal = [1, 1, 1];
   }
 
   private collectWashes(scene: HTMLElement): Wash[] {
