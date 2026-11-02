@@ -6,7 +6,7 @@ editing studio. The contact form posts to Web3Forms from the browser.
 | Piece | Where it runs |
 |-------|----------------|
 | Website | Azure Static Web App |
-| Secrets | Azure Key Vault. You type the three content values. |
+| Secrets | Azure Key Vault. You type the four content values. |
 | Content | Sanity content API |
 | Editing UI | Sanity Studio at `https://jencolink.sanity.studio` |
 | Contact | Web3Forms |
@@ -18,12 +18,19 @@ GitHub workflow overwrites the built copy with the Key Vault values.
 
 ## What Terraform creates
 
+- One resource group, named `jencolink`.
 - One Key Vault, named `jencolinkprodkv`.
 - Four secret slots: `sanity-project-id`, `sanity-dataset`, `sanity-auth-token`,
   `web3forms-access-key`. The first apply stores the word `pending`. Later
   applies do not change the value.
 - One Static Web App (Free), named `jencolink-prod-frontend`.
-- Four GitHub Actions secrets: `AZURE_RESOURCE_GROUP`, `AZURE_KEY_VAULT_NAME`,
+- Two role assignments for the GitHub app `jencolink-github-actions`:
+  **Contributor** on the website group, and **Key Vault Secrets User** on the vault.
+  Contributor does not include reading secret values. The vault role does.
+- **Key Vault Administrator** for the person who runs apply, so Terraform can
+  create the secret slots.
+- Seven GitHub Actions secrets: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
+  `AZURE_SUBSCRIPTION_ID`, `AZURE_RESOURCE_GROUP`, `AZURE_KEY_VAULT_NAME`,
   `AZURE_SWA_NAME`, `AZURE_SWA_DEPLOYMENT_TOKEN`.
 
 Terraform does not create a database, a storage account for the site, or an
@@ -32,35 +39,27 @@ already deleted, and it will not try to delete or recreate them.
 
 ## One-time setup
 
-1. Resource group `jencolink` must already exist. Terraform reads it and does not create it. Azure cannot rename `gencolink`, so create a new group:
-
-   ```bash
-   az group create --name jencolink --location eastus2
-   ```
-
-2. State storage is separate from that group. Create it once. This makes resource group `jencolink-rg-tfstate` and storage account `jencolinktfstate`. It does not copy the old `gencolinktfstate` account.
+1. State storage is separate from the website group. Create it once. This makes resource group `jencolink-rg-tfstate` and storage account `jencolinktfstate`. It does not copy the old `gencolinktfstate` account. Terraform creates the website group `jencolink` during apply.
 
    ```bash
    cd infra/terraform
    bash scripts/bootstrap-state.sh
    ```
-3. GitHub OIDC app. See [AZURE_OIDC_SETUP.md](../AZURE_OIDC_SETUP.md).
-   Put these three in GitHub Actions secrets yourself:
-   `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`.
-4. A GitHub PAT with Actions read/write on this repo. Export it as
+2. GitHub OIDC app and its federated credential. See [AZURE_OIDC_SETUP.md](../AZURE_OIDC_SETUP.md).
+   Do not assign Azure roles for that app in the portal. Apply assigns them.
+3. A GitHub PAT with Actions read/write on this repo. Export it as
    `GITHUB_TOKEN` in the shell you use for Terraform. Do not put it in
    `terraform.tfvars`.
-5. Copy the example vars and set the GitHub owner plus the OIDC client id:
+4. Copy the example vars and set the OIDC client id:
 
    ```bash
    cd infra/terraform
    cp terraform.tfvars.example terraform.tfvars
    ```
 
-   Set `github_actions_client_id` to the same value as `AZURE_CLIENT_ID`.
-   That grants the workflow permission to read Key Vault. If you leave it
-   empty, assign **Key Vault Secrets User** on the vault to the GitHub app
-   yourself after apply.
+   Set `github_actions_client_id` to the app registration's Application (client) ID.
+   Apply grants **Contributor** and **Key Vault Secrets User**, and writes
+   `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID`.
 
 ## Apply
 
@@ -69,15 +68,23 @@ Directus, SQL, and Functions settings, and Terraform will refuse it.
 
 ```bash
 cd infra/terraform
-cp terraform.tfvars.example terraform.tfvars
 terraform init -reconfigure
 terraform plan
 terraform apply
 ```
 
+Copy `terraform.tfvars.example` to `terraform.tfvars` only when that file does
+not already exist. Copying it again clears `github_actions_client_id`.
+
 `terraform init` may ask to copy the old `prod.tfstate`. Answer **no**.
-`-reconfigure` keeps the new `website.tfstate` empty. The plan should only
-create the vault, the three secret slots, the website, and the GitHub secrets.
+`-reconfigure` keeps the new `website.tfstate` empty. The plan should create
+the `jencolink` resource group, the vault, the four secret slots, the website,
+the two GitHub app role assignments, and the GitHub secrets.
+
+Your Azure login must be allowed to assign roles. Owner on the subscription
+is sufficient. If a role assignment already exists because it was added in
+the portal, delete that manual assignment and apply again. Terraform then
+creates the assignment it tracks.
 
 There is no workflow that runs Terraform. You apply it yourself.
 
@@ -126,7 +133,8 @@ In Sanity manage, allow CORS for `http://localhost:4200` and for the live site U
 
 ## Still done by hand
 
+- The app registration and its federated credential, once
 - `terraform apply`
-- The three OIDC GitHub secrets
 - The four Key Vault values, including the Sanity Developer token
+- Sanity CORS for the live site URL
 - A custom domain, if you add one later

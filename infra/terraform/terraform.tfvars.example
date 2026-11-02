@@ -5,7 +5,7 @@
 # Terraform creates empty slots for them in Key Vault. You set the values
 # in the Azure portal after apply.
 
-# Existing resource group (Terraform reads it; it must already exist)
+# Terraform creates this resource group.
 resource_group_name = "jencolink"
 
 project_name = "jencolink"
@@ -21,9 +21,8 @@ primary_location = "eastus2"
 github_owner      = "Lithira-Amarasinghe"
 github_repository = "jencolink"
 
-# Same value as the AZURE_CLIENT_ID GitHub secret.
-# When set, apply grants that app "Key Vault Secrets User".
-# Leave empty and assign that role yourself if you prefer.
+# Application (client) ID of the jencolink-github-actions app registration.
+# Apply grants that app its Azure roles and writes the OIDC GitHub secrets.
 github_actions_client_id = ""
 
 tags = {
