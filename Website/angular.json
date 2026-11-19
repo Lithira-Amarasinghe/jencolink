@@ -36,6 +36,11 @@
             "production": {
               "server": "src/main.server.ts",
               "outputMode": "static",
+              "optimization": {
+                "fonts": {
+                  "inline": false
+                }
+              },
               "budgets": [
                 {
                   "type": "initial",
