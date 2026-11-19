@@ -9,17 +9,24 @@
 .hero-pin {
   position: relative;
   z-index: 1;
-  height: 100vh;
-  height: 100svh;
   background: var(--bg);
   isolation: isolate;
   overflow: hidden;
 }
 
 .hero-fore {
+  position: relative;
+  z-index: 1;
+}
+
+:host-context(.hero-sequencing) .hero-pin {
+  height: 100vh;
+  height: 100svh;
+}
+
+:host-context(.hero-sequencing) .hero-fore {
   position: absolute;
   inset: 0;
-  z-index: 1;
 }
 
 .hero-split {
@@ -31,8 +38,12 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
   align-items: center;
   column-gap: 0;
-  height: 100%;
+  min-height: 100svh;
   padding: clamp(96px, 14vh, 156px) clamp(18px, 4.5vw, 96px) clamp(40px, 7vh, 96px) 0;
+}
+
+:host-context(.hero-sequencing) .hero-split {
+  height: 100%;
 }
 
 .hero-copy {
@@ -396,20 +407,20 @@
   display: none !important;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .hero-split {
     grid-template-columns: 1fr;
     align-items: start;
     align-content: center;
-    row-gap: clamp(22px, 4vh, 40px);
-    padding-top: clamp(88px, 12vh, 112px);
+    row-gap: clamp(18px, 4svh, 36px);
+    padding-block: max(96px, 12svh) 36px;
     padding-inline: clamp(18px, 6vw, 28px);
   }
 
   .hero-emblem {
     justify-self: center;
     justify-content: center;
-    width: min(58vw, 220px);
+    width: clamp(110px, min(50vw, 28svh), 220px);
     flex-direction: column;
   }
 
@@ -425,7 +436,7 @@
   }
 
   .hero-word {
-    font-size: clamp(2.35rem, 12vw, 4.4rem);
+    font-size: clamp(2rem, 13.5cqi, 4.4rem);
   }
 
   .hero-mission {
@@ -435,10 +446,12 @@
 
   .hero-tags {
     justify-content: center;
-    gap: 6px 18px;
+    gap: 0 18px;
+    margin-top: 16px;
   }
 
   .hero-tags button {
+    min-height: 44px;
     font-size: 12px;
     letter-spacing: 0.1em;
   }
@@ -446,6 +459,30 @@
   .hero-note-wrap,
   .hero-more {
     margin-inline: auto;
+  }
+
+  .hero-more {
+    min-height: 44px;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 760px) and (orientation: landscape) {
+  .hero-split {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: center;
+    column-gap: 16px;
+    padding-block: 84px 24px;
+  }
+
+  .hero-mission {
+    max-width: 23ch;
+    margin-top: 12px;
+    font-size: clamp(1.125rem, 7cqi, 1.5rem);
+  }
+
+  .hero-tags {
+    margin-top: 10px;
   }
 }
 

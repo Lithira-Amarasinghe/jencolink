@@ -71,7 +71,9 @@ const MISSION = [
 
 /** Scroll distance, in viewport heights, while the hero stays pinned. */
 const PIN_VH_DESKTOP = 1.55;
-const PIN_VH_MOBILE = 1.2;
+// Keep the eligibility check in index.html in sync for the first paint.
+const INTRO_MEDIA =
+  '(min-width: 761px) and (min-height: 650px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)';
 
 const MISSION_START = 0.56;
 const MISSION_EACH = 0.12;
@@ -88,7 +90,7 @@ const CHROME_END = 0.96;
  * The mark keeps its original shape. The wordmark arrives large, then eases
  * down to the headline that sits with the mission. The mark stays one
  * shape. The logo does not tilt, and its links never move apart.
- * Reduced motion skips the pin and shows the resting hero immediately.
+ * The pinned sequence runs on desktop viewports with room for the interactive hero.
  */
 @Component({
   selector: 'app-hero',
@@ -105,6 +107,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
 
   private readonly stage = viewChild<ElementRef<HTMLElement>>('stage');
   private readonly pin = viewChild<ElementRef<HTMLElement>>('pin');
+  private readonly copy = viewChild<ElementRef<HTMLElement>>('copy');
   private readonly aurora = viewChild<ElementRef<HTMLElement>>('aurora');
   private readonly mark = viewChild<ElementRef<HTMLElement>>('mark');
   private readonly word = viewChild<ElementRef<HTMLElement>>('word');
@@ -139,7 +142,6 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   readonly noteOpen = signal(false);
   readonly noteText = signal('');
 
-  private reducedMotion = false;
   private armed = false;
   private lastBrand = '';
   private noteTimer = 0;
@@ -152,10 +154,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private chromeOn = false;
   private headerLocked = false;
   private observer?: IntersectionObserver;
+  private copyObserver?: ResizeObserver;
   private trigger?: ScrollTrigger;
-  private motionMedia?: MediaQueryList;
+  private introMedia?: MediaQueryList;
   private onScenePointer?: (event: PointerEvent) => void;
-  private onMotionChange?: () => void;
+  private readonly onIntroMediaChange = () => this.bootSequence();
   private washes: Wash[] = [];
   private wordNodes: HTMLElement[] = [];
   private tagNodes: HTMLButtonElement[] = [];
@@ -190,17 +193,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     const scene = this.pin()?.nativeElement;
     if (!scene) return;
 
-    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.introMedia = window.matchMedia(INTRO_MEDIA);
+    this.introMedia.addEventListener('change', this.onIntroMediaChange);
     this.headerEl = document.querySelector('.site-header');
     this.washes = this.collectWashes(scene);
     this.placeWashes(scene, null, 0, 0);
-
-    if (this.reducedMotion) {
-      this.clearSequenceMode();
-      this.lastBrand = this.brandName();
-      this.armed = true;
-      return;
-    }
 
     if (document.documentElement.classList.contains('hero-sequencing')) {
       this.lockHeader(true);
@@ -216,22 +213,6 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.bootSequence();
     this.armed = true;
 
-    this.motionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
-    this.onMotionChange = () => {
-      this.reducedMotion = this.motionMedia?.matches ?? false;
-      if (this.reducedMotion) {
-        this.destroySequence();
-        this.clearMotionStyles();
-        this.clearSequenceMode();
-        this.introPlaying = false;
-        this.progress = 1;
-      } else {
-        document.documentElement.classList.add('hero-sequencing');
-        this.bootSequence();
-      }
-    };
-    this.motionMedia.addEventListener('change', this.onMotionChange);
-
     void document.fonts?.ready.then(() => {
       if (this.trigger) ScrollTrigger.refresh();
     });
@@ -241,7 +222,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     cancelAnimationFrame(this.raf);
     window.clearTimeout(this.noteTimer);
     this.observer?.disconnect();
-    this.motionMedia?.removeEventListener('change', this.onMotionChange ?? (() => undefined));
+    this.introMedia?.removeEventListener('change', this.onIntroMediaChange);
     const scene = this.pin()?.nativeElement;
     if (scene && this.onScenePointer) {
       scene.removeEventListener('pointermove', this.onScenePointer);
@@ -322,8 +303,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
 
   private bootSequence(): void {
     this.destroySequence();
-    if (this.reducedMotion || !isPlatformBrowser(this.platformId)) {
+    if (!this.introMedia?.matches) {
+      this.clearMotionStyles();
       this.clearSequenceMode();
+      this.introPlaying = false;
+      this.progress = 1;
       return;
     }
 
@@ -352,8 +336,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
       this.trigger = ScrollTrigger.create({
         trigger: stage,
         start: 'top top',
-        end: () =>
-          `+=${Math.round(window.innerHeight * (window.matchMedia('(max-width: 700px)').matches ? PIN_VH_MOBILE : PIN_VH_DESKTOP))}`,
+        end: () => `+=${Math.round(pin.offsetHeight * PIN_VH_DESKTOP)}`,
         pin,
         pinSpacing: true,
         anticipatePin: 1,
@@ -362,6 +345,16 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
         onRefresh: (self) => this.apply(self.progress),
         onUpdate: (self) => this.apply(self.progress),
       });
+
+      const copy = this.copy()?.nativeElement;
+      if (copy) {
+        // The expanding practice note shifts the wordmark's resting position.
+        this.copyObserver = new ResizeObserver(() => {
+          this.captureLayout();
+          this.apply(this.trigger?.progress ?? 0);
+        });
+        this.copyObserver.observe(copy);
+      }
     });
 
     const atRest = (this.trigger?.progress ?? 0) < 0.01 && window.scrollY < 16;
@@ -377,6 +370,8 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   private destroySequence(): void {
+    this.copyObserver?.disconnect();
+    this.copyObserver = undefined;
     this.trigger?.kill();
     this.trigger = undefined;
   }
@@ -570,7 +565,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
 
   private frame(now: number): void {
     this.raf = requestAnimationFrame((time) => this.frame(time));
-    if (document.hidden || !this.heroVisible) return;
+    if (!this.trigger || document.hidden || !this.heroVisible) return;
 
     const scene = this.pin()?.nativeElement;
     if (!scene) return;

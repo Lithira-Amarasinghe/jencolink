@@ -25,8 +25,6 @@ export class LenisScrollService {
       this.lenis = new Lenis({
         lerp: 0.12,
         smoothWheel: true,
-        syncTouch: true,
-        touchMultiplier: 1.5,
       });
 
       this.lenis.on('scroll', () => {
