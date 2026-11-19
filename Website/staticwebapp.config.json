@@ -17,13 +17,20 @@
       }
     },
     {
-      "route": "/*",
-      "serve": "/index.html",
-      "statusCode": 200
+      "route": "/index.html",
+      "redirect": "/",
+      "statusCode": 301
+    },
+    {
+      "route": "/index.csr.html",
+      "redirect": "/",
+      "statusCode": 301
     }
   ],
-  "navigationFallback": {
-    "rewrite": "/index.html"
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/404.html"
+    }
   },
   "globalHeaders": {
     "Cache-Control": "public, max-age=3600, must-revalidate",

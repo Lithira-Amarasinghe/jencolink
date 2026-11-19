@@ -8,7 +8,10 @@ import {
   AfterViewInit,
   OnDestroy,
   NgZone,
+  PLATFORM_ID,
+  afterNextRender,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -60,6 +63,7 @@ gsap.registerPlugin(ScrollTrigger);
 export class App implements AfterViewInit, OnDestroy {
   private readonly formBuilder = new FormBuilder();
   private readonly ngZone = inject(NgZone);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly contentStore = inject(SiteContentService);
   readonly theme = inject(ThemeService);
 
@@ -113,7 +117,9 @@ export class App implements AfterViewInit, OnDestroy {
   };
 
   constructor() {
-    void this.contentStore.load();
+    if (!this.isBrowser) return;
+
+    afterNextRender(() => void this.contentStore.load());
 
     // Rebuild reveal choreography whenever the rendered DOM changes: both when
     // CMS content arrives AND when loading() settles without a content change
@@ -128,6 +134,7 @@ export class App implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     // Steadier pinning: ignore transient mobile viewport-resize (address bar)
     // refreshes that otherwise cause the pinned sections to twitch mid-scroll.
     ScrollTrigger.config({ ignoreMobileResize: true });
@@ -312,6 +319,7 @@ export class App implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (!this.isBrowser) return;
     window.removeEventListener('resize', this.onResize);
     clearTimeout(this.resizeTimer);
     this.motionContext?.revert();
@@ -331,6 +339,12 @@ export class App implements AfterViewInit, OnDestroy {
   scrollHome(event: Event): void {
     event.preventDefault();
     this.scrollTo('top');
+  }
+
+  navigateTo(event: MouseEvent, target: string): void {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    event.preventDefault();
+    this.scrollTo(target);
   }
 
   toggleMenu(): void {

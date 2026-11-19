@@ -12,7 +12,7 @@
 
   <nav class="desktop-nav" aria-label="Primary navigation">
     @for (item of navItems; track item.target) {
-      <button type="button" (click)="scrollTo(item.target)">{{ item.label }}</button>
+      <a [href]="'#' + item.target" (click)="navigateTo($event, item.target)">{{ item.label }}</a>
     }
   </nav>
 
@@ -60,12 +60,12 @@
 @if (menuOpen()) {
   <nav class="mobile-nav" aria-label="Mobile navigation">
     @for (item of navItems; track item.target; let i = $index) {
-      <button type="button" [style.--i]="i" (click)="scrollTo(item.target)">
+      <a [href]="'#' + item.target" [style.--i]="i" (click)="navigateTo($event, item.target)">
         <span class="mobile-nav-index" aria-hidden="true">{{
           (i + 1).toString().padStart(2, '0')
         }}</span>
         {{ item.label }}
-      </button>
+      </a>
     }
   </nav>
 }
@@ -368,10 +368,10 @@
 
     <nav class="footer-col" aria-label="Footer navigation">
       <h2>Company</h2>
-      <button type="button" (click)="scrollTo('why')">About</button>
-      <button type="button" (click)="scrollTo('services')">Services</button>
-      <button type="button" (click)="scrollTo('faq')">FAQ</button>
-      <button type="button" (click)="scrollTo('contact')">Contact</button>
+      <a href="#why" (click)="navigateTo($event, 'why')">About</a>
+      <a href="#services" (click)="navigateTo($event, 'services')">Services</a>
+      <a href="#faq" (click)="navigateTo($event, 'faq')">FAQ</a>
+      <a href="#contact" (click)="navigateTo($event, 'contact')">Contact</a>
     </nav>
 
     <div class="footer-col" [attr.aria-busy]="contentStore.loading()">

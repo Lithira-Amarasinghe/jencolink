@@ -405,12 +405,8 @@ function strings(value: unknown): string[] {
 @Injectable({ providedIn: 'root' })
 export class SiteContentService {
   readonly content = signal<SiteContent>(defaultContent);
-  /**
-   * True until the CMS fetch settles (success or failure). Lets the template
-   * show skeleton placeholders instead of flashing the hardcoded fallback
-   * copy at users while the real content is still in flight.
-   */
-  readonly loading = signal(true);
+  // Keep the prerendered content visible while the browser fetches live copy.
+  readonly loading = signal(false);
   readonly hero = computed(() => this.content().hero);
   readonly services = computed(() => this.content().services);
   readonly products = computed(() => this.content().products);

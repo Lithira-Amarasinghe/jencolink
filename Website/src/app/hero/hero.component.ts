@@ -219,6 +219,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     cancelAnimationFrame(this.raf);
     window.clearTimeout(this.noteTimer);
     this.observer?.disconnect();
